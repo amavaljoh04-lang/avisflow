@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
   Star, ArrowLeft, QrCode, BarChart3, MessageSquare, TrendingUp, Download,
-  Plus, Loader2, Trash2, ExternalLink, ThumbsUp, ThumbsDown, Eye,
+  Plus, Loader2, Trash2, ExternalLink, ThumbsUp, ThumbsDown, Eye, Settings, Save,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "@/lib/api";
@@ -58,6 +58,15 @@ export default function BusinessDetail() {
   const [qrLabel, setQrLabel] = useState("");
   const [creatingQR, setCreatingQR] = useState(false);
   const [qrImages, setQrImages] = useState<QRImageData>({});
+  // Settings form state
+  const [editName, setEditName] = useState("");
+  const [editCategory, setEditCategory] = useState("");
+  const [editAddress, setEditAddress] = useState("");
+  const [editPhone, setEditPhone] = useState("");
+  const [editGoogleUrl, setEditGoogleUrl] = useState("");
+  const [editColor, setEditColor] = useState("#2563eb");
+  const [editThreshold, setEditThreshold] = useState(4);
+  const [saving, setSaving] = useState(false);
 
   const fetchAll = async () => {
     try {
@@ -68,6 +77,14 @@ export default function BusinessDetail() {
         api.get(`/api/businesses/${id}/qrcodes`),
       ]);
       setBusiness(bizRes.data);
+      // Populate edit form with current values
+      setEditName(bizRes.data.name || "");
+      setEditCategory(bizRes.data.category || "");
+      setEditAddress(bizRes.data.address || "");
+      setEditPhone(bizRes.data.phone || "");
+      setEditGoogleUrl(bizRes.data.google_review_url || "");
+      setEditColor(bizRes.data.primary_color || "#2563eb");
+      setEditThreshold(bizRes.data.positive_threshold || 4);
       setAnalytics(analyticsRes.data);
       setReviews(reviewsRes.data);
       setQrcodes(qrRes.data);
@@ -129,6 +146,27 @@ export default function BusinessDetail() {
       fetchAll();
     } catch {
       toast.error("Erreur");
+    }
+  };
+
+  const saveBusiness = async () => {
+    setSaving(true);
+    try {
+      const res = await api.put(`/api/businesses/${id}`, {
+        name: editName,
+        category: editCategory || null,
+        address: editAddress || null,
+        phone: editPhone || null,
+        google_review_url: editGoogleUrl || null,
+        primary_color: editColor,
+        positive_threshold: editThreshold,
+      });
+      setBusiness(res.data);
+      toast.success("Établissement mis à jour !");
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail || "Erreur lors de la sauvegarde");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -210,6 +248,7 @@ export default function BusinessDetail() {
             { key: "analytics", label: "Analytics", icon: BarChart3 },
             { key: "reviews", label: "Avis", icon: MessageSquare },
             { key: "qrcodes", label: "QR Codes", icon: QrCode },
+            { key: "settings", label: "Paramètres", icon: Settings },
           ].map((t) => (
             <button
               key={t.key}
@@ -393,6 +432,85 @@ export default function BusinessDetail() {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* Settings Tab */}
+        {tab === "settings" && (
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Informations de l'établissement</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-name">Nom de l'établissement *</Label>
+                    <Input id="edit-name" value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Mon Restaurant" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-category">Catégorie</Label>
+                    <Input id="edit-category" value={editCategory} onChange={(e) => setEditCategory(e.target.value)} placeholder="Restaurant, Coiffeur, Garage..." />
+                  </div>
+                </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-address">Adresse</Label>
+                    <Input id="edit-address" value={editAddress} onChange={(e) => setEditAddress(e.target.value)} placeholder="12 rue de la Paix, Paris" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-phone">Téléphone</Label>
+                    <Input id="edit-phone" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} placeholder="01 23 45 67 89" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Configuration Google Avis</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-google-url">URL de la page Google Avis</Label>
+                  <Input id="edit-google-url" value={editGoogleUrl} onChange={(e) => setEditGoogleUrl(e.target.value)} placeholder="https://search.google.com/local/writereview?placeid=..." />
+                  <p className="text-xs text-gray-500">Trouvez cette URL en cherchant votre commerce sur Google Maps → cliquez "Écrire un avis" → copiez l'URL</p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-threshold">Seuil de redirection Google (note minimum)</Label>
+                  <div className="flex items-center gap-4">
+                    <Input id="edit-threshold" type="number" min={1} max={5} value={editThreshold} onChange={(e) => setEditThreshold(Number(e.target.value))} className="w-24" />
+                    <p className="text-sm text-gray-500">Les avis avec une note ≥ {editThreshold} étoile{editThreshold > 1 ? "s" : ""} seront redirigés vers Google</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Apparence</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-color">Couleur principale</Label>
+                  <div className="flex items-center gap-3">
+                    <input type="color" id="edit-color" value={editColor} onChange={(e) => setEditColor(e.target.value)} className="w-10 h-10 rounded border cursor-pointer" />
+                    <Input value={editColor} onChange={(e) => setEditColor(e.target.value)} className="w-32" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="flex justify-end gap-3">
+              <Button
+                onClick={saveBusiness}
+                disabled={saving || !editName.trim()}
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 px-8"
+              >
+                {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
+                Enregistrer les modifications
+              </Button>
+            </div>
           </div>
         )}
       </div>
