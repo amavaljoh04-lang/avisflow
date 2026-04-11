@@ -1,8 +1,24 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Star, QrCode, Shield, TrendingUp, ArrowRight, CheckCircle2, BarChart3, MessageSquare } from "lucide-react";
+import api from "@/lib/api";
+
+interface PublicStats {
+  total_businesses: number;
+  total_reviews: number;
+  total_users: number;
+  average_rating: number;
+  redirected_to_google: number;
+}
 
 export default function Landing() {
+  const [stats, setStats] = useState<PublicStats | null>(null);
+
+  useEffect(() => {
+    api.get("/api/public/stats").then((res) => setStats(res.data)).catch(() => {});
+  }, []);
+
   return (
     <div className="min-h-screen bg-white">
       {/* Nav */}
@@ -75,12 +91,13 @@ export default function Landing() {
       {/* Stats */}
       <section className="py-16 bg-gray-900 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-8 text-center">
             {[
-              { value: "93%", label: "des clients lisent les avis" },
-              { value: "4.5★", label: "note moyenne obtenue" },
-              { value: "+200%", label: "d'avis en plus" },
-              { value: "2 min", label: "pour s'installer" },
+              { value: stats ? String(stats.total_users) : "0", label: "Utilisateurs inscrits" },
+              { value: stats ? String(stats.total_businesses) : "0", label: "Pages creees" },
+              { value: stats ? String(stats.total_reviews) : "0", label: "Avis collectes" },
+              { value: stats ? `${stats.average_rating}\u2605` : "0\u2605", label: "Note moyenne" },
+              { value: stats ? String(stats.redirected_to_google) : "0", label: "Rediriges vers Google" },
             ].map((s, i) => (
               <div key={i}>
                 <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">{s.value}</div>

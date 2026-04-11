@@ -1,9 +1,30 @@
+import os
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from fastapi import APIRouter, HTTPException, Depends
+from pydantic import BaseModel
+from typing import Optional
 from app.database import get_db
 from app.models.schemas import AdminStats
 from app.utils.auth import require_admin
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
+
+
+class EmailSettings(BaseModel):
+    smtp_host: str
+    smtp_port: int = 587
+    smtp_user: str
+    smtp_password: str
+    sender_name: str = "AvisFlow"
+    sender_email: str
+
+
+class PromoEmail(BaseModel):
+    subject: str
+    body: str
+    target: str = "all"  # "all" or "active"
 
 
 @router.get("/stats", response_model=AdminStats)
@@ -72,13 +93,17 @@ async def list_all_reviews(user: dict = Depends(require_admin)):
         return [dict(r) for r in rows]
 
 
+class RoleUpdate(BaseModel):
+    role: str
+
+
 @router.put("/users/{user_id}/role")
-async def update_user_role(user_id: int, role: str, admin: dict = Depends(require_admin)):
-    if role not in ("user", "admin"):
+async def update_user_role(user_id: int, data: RoleUpdate, admin: dict = Depends(require_admin)):
+    if data.role not in ("user", "admin"):
         raise HTTPException(status_code=400, detail="Role must be 'user' or 'admin'")
     with get_db() as db:
-        db.execute("UPDATE users SET role = ? WHERE id = ?", (role, user_id))
-        return {"message": f"User role updated to {role}"}
+        db.execute("UPDATE users SET role = ? WHERE id = ?", (data.role, user_id))
+        return {"message": f"User role updated to {data.role}"}
 
 
 @router.put("/users/{user_id}/toggle")
@@ -90,3 +115,124 @@ async def toggle_user(user_id: int, admin: dict = Depends(require_admin)):
         new_status = 0 if user["is_active"] else 1
         db.execute("UPDATE users SET is_active = ? WHERE id = ?", (new_status, user_id))
         return {"message": "User status toggled", "is_active": bool(new_status)}
+
+
+@router.delete("/users/{user_id}")
+async def delete_user(user_id: int, admin: dict = Depends(require_admin)):
+    with get_db() as db:
+        user = db.execute("SELECT id, role FROM users WHERE id = ?", (user_id,)).fetchone()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        if user["id"] == admin["id"]:
+            raise HTTPException(status_code=400, detail="Vous ne pouvez pas supprimer votre propre compte")
+        # Delete user's reviews, qr_codes, businesses, then user
+        biz_ids = db.execute("SELECT id FROM businesses WHERE user_id = ?", (user_id,)).fetchall()
+        for biz in biz_ids:
+            db.execute("DELETE FROM reviews WHERE business_id = ?", (biz["id"],))
+            db.execute("DELETE FROM qr_codes WHERE business_id = ?", (biz["id"],))
+        db.execute("DELETE FROM businesses WHERE user_id = ?", (user_id,))
+        db.execute("DELETE FROM users WHERE id = ?", (user_id,))
+        return {"message": "Utilisateur et toutes ses donnees supprimes"}
+
+
+# --- Email Settings ---
+
+@router.get("/settings/email")
+async def get_email_settings(admin: dict = Depends(require_admin)):
+    with get_db() as db:
+        keys = ["smtp_host", "smtp_port", "smtp_user", "smtp_password", "sender_name", "sender_email"]
+        settings = {}
+        for key in keys:
+            row = db.execute("SELECT value FROM settings WHERE key = ?", (f"email_{key}",)).fetchone()
+            settings[key] = row["value"] if row else ""
+        return settings
+
+
+@router.put("/settings/email")
+async def update_email_settings(data: EmailSettings, admin: dict = Depends(require_admin)):
+    with get_db() as db:
+        fields = {
+            "smtp_host": data.smtp_host,
+            "smtp_port": str(data.smtp_port),
+            "smtp_user": data.smtp_user,
+            "smtp_password": data.smtp_password,
+            "sender_name": data.sender_name,
+            "sender_email": data.sender_email,
+        }
+        for key, value in fields.items():
+            db.execute(
+                "INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)",
+                (f"email_{key}", value),
+            )
+        return {"message": "Configuration email sauvegardee"}
+
+
+@router.post("/email/test")
+async def test_email(admin: dict = Depends(require_admin)):
+    """Send a test email to verify SMTP settings."""
+    settings = _get_email_settings()
+    if not settings:
+        raise HTTPException(status_code=400, detail="Configurez d'abord les parametres email")
+    try:
+        _send_email(
+            settings,
+            to_email=admin["email"],
+            subject="AvisFlow - Test Email",
+            body="<h1>Ca marche !</h1><p>Votre configuration email AvisFlow fonctionne correctement.</p>",
+        )
+        return {"message": f"Email de test envoye a {admin['email']}"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur d'envoi: {str(e)}")
+
+
+@router.post("/email/promo")
+async def send_promo_email(data: PromoEmail, admin: dict = Depends(require_admin)):
+    """Send a promotional email to all users."""
+    settings = _get_email_settings()
+    if not settings:
+        raise HTTPException(status_code=400, detail="Configurez d'abord les parametres email")
+
+    with get_db() as db:
+        if data.target == "active":
+            users = db.execute("SELECT email, full_name FROM users WHERE is_active = 1").fetchall()
+        else:
+            users = db.execute("SELECT email, full_name FROM users").fetchall()
+
+    sent = 0
+    errors = 0
+    for user in users:
+        try:
+            personalized_body = data.body.replace("{{name}}", user["full_name"] or "")
+            _send_email(settings, to_email=user["email"], subject=data.subject, body=personalized_body)
+            sent += 1
+        except Exception:
+            errors += 1
+
+    return {"message": f"{sent} email(s) envoye(s), {errors} erreur(s)"}
+
+
+def _get_email_settings() -> dict | None:
+    with get_db() as db:
+        keys = ["smtp_host", "smtp_port", "smtp_user", "smtp_password", "sender_name", "sender_email"]
+        settings = {}
+        for key in keys:
+            row = db.execute("SELECT value FROM settings WHERE key = ?", (f"email_{key}",)).fetchone()
+            if row:
+                settings[key] = row["value"]
+        if not settings.get("smtp_host") or not settings.get("smtp_user"):
+            return None
+        return settings
+
+
+def _send_email(settings: dict, to_email: str, subject: str, body: str):
+    msg = MIMEMultipart("alternative")
+    msg["From"] = f"{settings.get('sender_name', 'AvisFlow')} <{settings['sender_email']}>"
+    msg["To"] = to_email
+    msg["Subject"] = subject
+    msg.attach(MIMEText(body, "html", "utf-8"))
+
+    port = int(settings.get("smtp_port", 587))
+    with smtplib.SMTP(settings["smtp_host"], port) as server:
+        server.starttls()
+        server.login(settings["smtp_user"], settings["smtp_password"])
+        server.send_message(msg)

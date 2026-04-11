@@ -2,11 +2,14 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
   Star, ArrowLeft, Users, Building2, MessageSquare,
   Loader2, Shield, ShieldOff, UserCog, TrendingUp,
+  Trash2, Mail, Send, Settings, Save, TestTube,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "@/lib/api";
@@ -58,7 +61,23 @@ export default function AdminPanel() {
   const [businesses, setBusinesses] = useState<AdminBusiness[]>([]);
   const [reviews, setReviews] = useState<AdminReview[]>([]);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<"overview" | "users" | "businesses" | "reviews">("overview");
+  const [tab, setTab] = useState<"users" | "businesses" | "reviews" | "email">("users");
+
+  // Email settings
+  const [smtpHost, setSmtpHost] = useState("");
+  const [smtpPort, setSmtpPort] = useState("587");
+  const [smtpUser, setSmtpUser] = useState("");
+  const [smtpPassword, setSmtpPassword] = useState("");
+  const [senderName, setSenderName] = useState("AvisFlow");
+  const [senderEmail, setSenderEmail] = useState("");
+  const [savingEmail, setSavingEmail] = useState(false);
+  const [testingEmail, setTestingEmail] = useState(false);
+
+  // Promo email
+  const [promoSubject, setPromoSubject] = useState("");
+  const [promoBody, setPromoBody] = useState("");
+  const [promoTarget, setPromoTarget] = useState("all");
+  const [sendingPromo, setSendingPromo] = useState(false);
 
   const fetchAll = async () => {
     try {
@@ -84,7 +103,21 @@ export default function AdminPanel() {
     }
   };
 
-  useEffect(() => { fetchAll(); }, []);
+  const fetchEmailSettings = async () => {
+    try {
+      const res = await api.get("/api/admin/settings/email");
+      setSmtpHost(res.data.smtp_host || "");
+      setSmtpPort(res.data.smtp_port || "587");
+      setSmtpUser(res.data.smtp_user || "");
+      setSmtpPassword(res.data.smtp_password || "");
+      setSenderName(res.data.sender_name || "AvisFlow");
+      setSenderEmail(res.data.sender_email || "");
+    } catch {
+      // Email not configured yet
+    }
+  };
+
+  useEffect(() => { fetchAll(); fetchEmailSettings(); }, []);
 
   const toggleUserRole = async (userId: number, currentRole: string) => {
     const newRole = currentRole === "admin" ? "user" : "admin";
@@ -101,10 +134,75 @@ export default function AdminPanel() {
   const toggleUserActive = async (userId: number) => {
     try {
       await api.put(`/api/admin/users/${userId}/toggle`);
-      toast.success("Statut mis à jour");
+      toast.success("Statut mis a jour");
       fetchAll();
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Erreur");
+    }
+  };
+
+  const deleteUser = async (userId: number, userName: string) => {
+    if (!confirm(`Supprimer definitivement "${userName}" et toutes ses donnees ? Cette action est irreversible.`)) return;
+    try {
+      await api.delete(`/api/admin/users/${userId}`);
+      toast.success("Utilisateur supprime");
+      fetchAll();
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail || "Erreur");
+    }
+  };
+
+  const saveEmailSettings = async () => {
+    setSavingEmail(true);
+    try {
+      await api.put("/api/admin/settings/email", {
+        smtp_host: smtpHost,
+        smtp_port: parseInt(smtpPort),
+        smtp_user: smtpUser,
+        smtp_password: smtpPassword,
+        sender_name: senderName,
+        sender_email: senderEmail,
+      });
+      toast.success("Configuration email sauvegardee !");
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail || "Erreur");
+    } finally {
+      setSavingEmail(false);
+    }
+  };
+
+  const sendTestEmail = async () => {
+    setTestingEmail(true);
+    try {
+      const res = await api.post("/api/admin/email/test");
+      toast.success(res.data.message);
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail || "Erreur");
+    } finally {
+      setTestingEmail(false);
+    }
+  };
+
+  const sendPromoEmail = async () => {
+    if (!promoSubject.trim() || !promoBody.trim()) {
+      toast.error("Sujet et contenu requis");
+      return;
+    }
+    if (!confirm(`Envoyer cet email a ${promoTarget === "all" ? "tous les utilisateurs" : "les utilisateurs actifs"} ?`)) return;
+    setSendingPromo(true);
+    try {
+      const res = await api.post("/api/admin/email/promo", {
+        subject: promoSubject,
+        body: promoBody,
+        target: promoTarget,
+      });
+      toast.success(res.data.message);
+      setPromoSubject("");
+      setPromoBody("");
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail || "Erreur");
+    } finally {
+      setSendingPromo(false);
     }
   };
 
@@ -175,16 +273,17 @@ export default function AdminPanel() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 bg-white rounded-lg p-1 border mb-6">
+        <div className="flex gap-1 bg-white rounded-lg p-1 border mb-6 overflow-x-auto">
           {[
             { key: "users", label: "Utilisateurs", icon: Users },
-            { key: "businesses", label: "Établissements", icon: Building2 },
-            { key: "reviews", label: "Avis récents", icon: MessageSquare },
+            { key: "businesses", label: "Etablissements", icon: Building2 },
+            { key: "reviews", label: "Avis", icon: MessageSquare },
+            { key: "email", label: "Email", icon: Mail },
           ].map((t) => (
             <button
               key={t.key}
               onClick={() => setTab(t.key as any)}
-              className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all ${
+              className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all whitespace-nowrap ${
                 tab === t.key
                   ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm"
                   : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
@@ -243,8 +342,11 @@ export default function AdminPanel() {
                             <Button variant="ghost" size="sm" onClick={() => toggleUserRole(u.id, u.role)} title="Changer le rôle">
                               <UserCog className="w-4 h-4" />
                             </Button>
-                            <Button variant="ghost" size="sm" onClick={() => toggleUserActive(u.id)} title={u.is_active ? "Désactiver" : "Activer"}>
+                            <Button variant="ghost" size="sm" onClick={() => toggleUserActive(u.id)} title={u.is_active ? "Desactiver" : "Activer"}>
                               {u.is_active ? <ShieldOff className="w-4 h-4 text-red-500" /> : <Shield className="w-4 h-4 text-green-500" />}
+                            </Button>
+                            <Button variant="ghost" size="sm" onClick={() => deleteUser(u.id, u.full_name || u.email)} title="Supprimer definitivement">
+                              <Trash2 className="w-4 h-4 text-red-500" />
                             </Button>
                           </div>
                         </td>
@@ -338,6 +440,116 @@ export default function AdminPanel() {
                 </Card>
               ))
             )}
+          </div>
+        )}
+
+        {/* Email Tab */}
+        {tab === "email" && (
+          <div className="space-y-6">
+            {/* SMTP Configuration */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Settings className="w-5 h-5 text-blue-600" /> Configuration SMTP
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="smtp-host">Serveur SMTP</Label>
+                    <Input id="smtp-host" value={smtpHost} onChange={(e) => setSmtpHost(e.target.value)} placeholder="smtp.gmail.com" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="smtp-port">Port</Label>
+                    <Input id="smtp-port" value={smtpPort} onChange={(e) => setSmtpPort(e.target.value)} placeholder="587" />
+                  </div>
+                </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="smtp-user">Identifiant SMTP</Label>
+                    <Input id="smtp-user" value={smtpUser} onChange={(e) => setSmtpUser(e.target.value)} placeholder="votre@email.com" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="smtp-password">Mot de passe SMTP</Label>
+                    <Input id="smtp-password" type="password" value={smtpPassword} onChange={(e) => setSmtpPassword(e.target.value)} placeholder="Mot de passe ou cle d'application" />
+                  </div>
+                </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="sender-name">Nom expediteur</Label>
+                    <Input id="sender-name" value={senderName} onChange={(e) => setSenderName(e.target.value)} placeholder="AvisFlow" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="sender-email">Email expediteur</Label>
+                    <Input id="sender-email" value={senderEmail} onChange={(e) => setSenderEmail(e.target.value)} placeholder="noreply@avisflow.online" />
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500">
+                  Pour Gmail: utilisez smtp.gmail.com, port 587, et un mot de passe d'application.
+                  Allez dans Compte Google, Securite, Mots de passe des applications.
+                </p>
+                <div className="flex gap-3">
+                  <Button onClick={saveEmailSettings} disabled={savingEmail} className="bg-gradient-to-r from-blue-600 to-indigo-600">
+                    {savingEmail ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
+                    Sauvegarder
+                  </Button>
+                  <Button variant="outline" onClick={sendTestEmail} disabled={testingEmail || !smtpHost}>
+                    {testingEmail ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <TestTube className="w-4 h-4 mr-2" />}
+                    Envoyer un test
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Send Promo Email */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Send className="w-5 h-5 text-indigo-600" /> Envoyer un email promotionnel
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="promo-subject">Sujet</Label>
+                  <Input id="promo-subject" value={promoSubject} onChange={(e) => setPromoSubject(e.target.value)} placeholder="Decouvrez les nouvelles fonctionnalites !" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="promo-body">Contenu (HTML)</Label>
+                  <textarea
+                    id="promo-body"
+                    className="flex min-h-[160px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-none"
+                    value={promoBody}
+                    onChange={(e) => setPromoBody(e.target.value)}
+                    placeholder={"<h1>Bonjour {{name}},</h1>\n<p>Decouvrez les nouvelles fonctionnalites...</p>"}
+                  />
+                  <p className="text-xs text-gray-500">{"Utilisez {{name}} pour inserer le nom du destinataire. Contenu en HTML."}</p>
+                </div>
+                <div className="space-y-2">
+                  <Label>Destinataires</Label>
+                  <div className="flex gap-4">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="radio" name="target" value="all" checked={promoTarget === "all"} onChange={(e) => setPromoTarget(e.target.value)} className="accent-blue-600" />
+                      <span className="text-sm">Tous les utilisateurs ({users.length})</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="radio" name="target" value="active" checked={promoTarget === "active"} onChange={(e) => setPromoTarget(e.target.value)} className="accent-blue-600" />
+                      <span className="text-sm">Actifs uniquement ({users.filter(u => u.is_active).length})</span>
+                    </label>
+                  </div>
+                </div>
+                <Button
+                  onClick={sendPromoEmail}
+                  disabled={sendingPromo || !promoSubject.trim() || !promoBody.trim() || !smtpHost}
+                  className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+                >
+                  {sendingPromo ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
+                  Envoyer
+                </Button>
+                {!smtpHost && (
+                  <p className="text-xs text-amber-600">Configurez d'abord les parametres SMTP ci-dessus.</p>
+                )}
+              </CardContent>
+            </Card>
           </div>
         )}
       </div>

@@ -84,6 +84,12 @@ def init_db():
             FOREIGN KEY (business_id) REFERENCES businesses(id)
         );
 
+        CREATE TABLE IF NOT EXISTS settings (
+            key TEXT PRIMARY KEY,
+            value TEXT NOT NULL,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
         CREATE INDEX IF NOT EXISTS idx_reviews_business ON reviews(business_id);
         CREATE INDEX IF NOT EXISTS idx_reviews_created ON reviews(created_at);
         CREATE INDEX IF NOT EXISTS idx_businesses_user ON businesses(user_id);
