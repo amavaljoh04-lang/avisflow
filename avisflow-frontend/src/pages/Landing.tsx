@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Star, QrCode, Shield, TrendingUp, ArrowRight, CheckCircle2, BarChart3, MessageSquare } from "lucide-react";
+import { useI18n, LangSwitcher } from "@/lib/i18n";
 import api from "@/lib/api";
 
 interface PublicStats {
@@ -13,6 +14,7 @@ interface PublicStats {
 }
 
 export default function Landing() {
+  const { t } = useI18n();
   const [stats, setStats] = useState<PublicStats | null>(null);
 
   useEffect(() => {
@@ -31,17 +33,19 @@ export default function Landing() {
             <span className="text-xl font-bold text-gray-900">AvisFlow</span>
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm text-gray-600">
-            <a href="#features" className="hover:text-gray-900 transition">Fonctionnalités</a>
-            <a href="#how" className="hover:text-gray-900 transition">Comment ça marche</a>
-            <a href="#pricing" className="hover:text-gray-900 transition">Tarifs</a>
+            <a href="#features" className="hover:text-gray-900 transition">{t("nav.features")}</a>
+            <a href="#how" className="hover:text-gray-900 transition">{t("nav.how")}</a>
+            <a href="#pricing" className="hover:text-gray-900 transition">{t("nav.pricing")}</a>
+            <Link to="/blog" className="hover:text-gray-900 transition">{t("nav.blog")}</Link>
           </div>
           <div className="flex items-center gap-3">
+            <LangSwitcher />
             <Link to="/login">
-              <Button variant="ghost" size="sm">Connexion</Button>
+              <Button variant="ghost" size="sm">{t("nav.login")}</Button>
             </Link>
             <Link to="/register">
               <Button size="sm" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700">
-                Commencer gratuitement
+                {t("nav.signup")}
               </Button>
             </Link>
           </div>
@@ -55,34 +59,33 @@ export default function Landing() {
           <div className="text-center max-w-4xl mx-auto">
             <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-full px-4 py-1.5 text-sm text-blue-700 mb-8">
               <Star className="w-4 h-4" />
-              <span>100% Gratuit — Boostez vos avis Google dès maintenant</span>
+              <span>{t("hero.badge")}</span>
             </div>
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 tracking-tight leading-tight">
-              Transformez vos clients en{" "}
+              {t("hero.title1")}
               <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                avis 5 étoiles
+                {t("hero.title2")}
               </span>
             </h1>
             <p className="mt-6 text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
-              AvisFlow collecte automatiquement les avis positifs sur Google et garde les retours négatifs privés. 
-              Un simple QR code suffit.
+              {t("hero.subtitle")}
             </p>
             <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link to="/register">
                 <Button size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-lg px-8 py-6 shadow-lg shadow-blue-500/25">
-                  Créer mon compte gratuit <ArrowRight className="w-5 h-5 ml-2" />
+                  {t("hero.cta")} <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </Link>
               <a href="#how">
                 <Button variant="outline" size="lg" className="text-lg px-8 py-6">
-                  Voir la démo
+                  {t("hero.demo")}
                 </Button>
               </a>
             </div>
             <div className="mt-8 flex items-center justify-center gap-6 text-sm text-gray-500">
-              <span className="flex items-center gap-1"><CheckCircle2 className="w-4 h-4 text-green-500" /> Aucune carte requise</span>
-              <span className="flex items-center gap-1"><CheckCircle2 className="w-4 h-4 text-green-500" /> Installation en 2 min</span>
-              <span className="flex items-center gap-1"><CheckCircle2 className="w-4 h-4 text-green-500" /> 100% gratuit</span>
+              <span className="flex items-center gap-1"><CheckCircle2 className="w-4 h-4 text-green-500" /> {t("hero.nocard")}</span>
+              <span className="flex items-center gap-1"><CheckCircle2 className="w-4 h-4 text-green-500" /> {t("hero.quick")}</span>
+              <span className="flex items-center gap-1"><CheckCircle2 className="w-4 h-4 text-green-500" /> {t("hero.free")}</span>
             </div>
           </div>
         </div>
@@ -93,11 +96,11 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-5 gap-8 text-center">
             {[
-              { value: stats ? String(stats.total_users) : "0", label: "Utilisateurs inscrits" },
-              { value: stats ? String(stats.total_businesses) : "0", label: "Pages creees" },
-              { value: stats ? String(stats.total_reviews) : "0", label: "Avis collectes" },
-              { value: stats ? `${stats.average_rating}\u2605` : "0\u2605", label: "Note moyenne" },
-              { value: stats ? String(stats.redirected_to_google) : "0", label: "Rediriges vers Google" },
+              { value: stats ? String(stats.total_users) : "0", label: t("stats.users") },
+              { value: stats ? String(stats.total_businesses) : "0", label: t("stats.pages") },
+              { value: stats ? String(stats.total_reviews) : "0", label: t("stats.reviews") },
+              { value: stats ? `${stats.average_rating}\u2605` : "0\u2605", label: t("stats.avg") },
+              { value: stats ? String(stats.redirected_to_google) : "0", label: t("stats.google") },
             ].map((s, i) => (
               <div key={i}>
                 <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">{s.value}</div>
@@ -112,28 +115,28 @@ export default function Landing() {
       <section id="how" className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">Comment ça marche ?</h2>
-            <p className="mt-4 text-lg text-gray-600">3 étapes simples pour booster votre réputation</p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">{t("how.title")}</h2>
+            <p className="mt-4 text-lg text-gray-600">{t("how.subtitle")}</p>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
             {[
               {
                 icon: QrCode,
                 step: "1",
-                title: "Affichez votre QR Code",
-                desc: "Imprimez le QR code généré et placez-le sur vos tables, comptoir ou vitrine. Vos clients le scannent avec leur téléphone.",
+                title: t("how.step1.title"),
+                desc: t("how.step1.desc"),
               },
               {
                 icon: Star,
                 step: "2",
-                title: "Le client note son expérience",
-                desc: "Une page élégante s'ouvre. Le client choisit de 1 à 5 étoiles. Simple, rapide, sans application à télécharger.",
+                title: t("how.step2.title"),
+                desc: t("how.step2.desc"),
               },
               {
                 icon: TrendingUp,
                 step: "3",
-                title: "Les avis positifs vont sur Google",
-                desc: "4-5 étoiles → redirigé vers Google. 1-3 étoiles → feedback privé pour vous. Votre note Google monte naturellement.",
+                title: t("how.step3.title"),
+                desc: t("how.step3.desc"),
               },
             ].map((item, i) => (
               <div key={i} className="relative bg-gradient-to-b from-gray-50 to-white rounded-2xl p-8 border border-gray-100 hover:border-blue-200 hover:shadow-lg transition-all duration-300">
@@ -155,17 +158,17 @@ export default function Landing() {
       <section id="features" className="py-24 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">Tout ce dont vous avez besoin</h2>
-            <p className="mt-4 text-lg text-gray-600">Des outils puissants pour gérer votre e-réputation</p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">{t("features.title")}</h2>
+            <p className="mt-4 text-lg text-gray-600">{t("features.subtitle")}</p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              { icon: QrCode, title: "QR Codes personnalisés", desc: "Générez des QR codes avec votre branding. Imprimez-les ou affichez-les sur écran." },
-              { icon: Shield, title: "Protection des avis négatifs", desc: "Les avis 1-3 étoiles restent privés. Recevez le feedback pour vous améliorer." },
-              { icon: TrendingUp, title: "Redirection Google intelligente", desc: "Les clients satisfaits sont redirigés vers votre page Google pour laisser un avis." },
-              { icon: BarChart3, title: "Analytics en temps réel", desc: "Suivez l'évolution de vos avis, taux de satisfaction et scans de QR codes." },
-              { icon: MessageSquare, title: "Feedback privé", desc: "Recevez les retours négatifs en privé et répondez directement à vos clients." },
-              { icon: Star, title: "Multi-établissements", desc: "Gérez plusieurs établissements depuis un seul tableau de bord." },
+              { icon: QrCode, title: t("features.qr.title"), desc: t("features.qr.desc") },
+              { icon: Shield, title: t("features.shield.title"), desc: t("features.shield.desc") },
+              { icon: TrendingUp, title: t("features.redirect.title"), desc: t("features.redirect.desc") },
+              { icon: BarChart3, title: t("features.analytics.title"), desc: t("features.analytics.desc") },
+              { icon: MessageSquare, title: t("features.feedback.title"), desc: t("features.feedback.desc") },
+              { icon: Star, title: t("features.multi.title"), desc: t("features.multi.desc") },
             ].map((f, i) => (
               <div key={i} className="bg-white rounded-xl p-6 border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all duration-300">
                 <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center mb-4">
@@ -182,20 +185,20 @@ export default function Landing() {
       {/* Pricing */}
       <section id="pricing" className="py-24 bg-white">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">100% Gratuit</h2>
-          <p className="mt-4 text-lg text-gray-600 mb-12">Pas de piège, pas de carte bancaire. Tous les outils pour booster vos avis Google.</p>
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">{t("pricing.title")}</h2>
+          <p className="mt-4 text-lg text-gray-600 mb-12">{t("pricing.subtitle")}</p>
           <div className="bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl p-8 text-white shadow-xl shadow-blue-500/20">
-            <div className="text-5xl font-bold mb-2">0€</div>
-            <div className="text-blue-200 mb-8">pour toujours</div>
+            <div className="text-5xl font-bold mb-2">{t("pricing.price")}</div>
+            <div className="text-blue-200 mb-8">{t("pricing.forever")}</div>
             <ul className="space-y-3 text-left max-w-sm mx-auto mb-8">
               {[
-                "Établissements illimités",
-                "QR codes illimités",
-                "Collecte d'avis illimitée",
-                "Dashboard analytics complet",
-                "Redirection Google automatique",
-                "Feedback privé",
-                "Support par email",
+                t("pricing.f1"),
+                t("pricing.f2"),
+                t("pricing.f3"),
+                t("pricing.f4"),
+                t("pricing.f5"),
+                t("pricing.f6"),
+                t("pricing.f7"),
               ].map((item, i) => (
                 <li key={i} className="flex items-center gap-3">
                   <CheckCircle2 className="w-5 h-5 text-blue-200 shrink-0" />
@@ -205,7 +208,7 @@ export default function Landing() {
             </ul>
             <Link to="/register">
               <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50 text-lg px-8 py-6 w-full max-w-sm">
-                Commencer maintenant <ArrowRight className="w-5 h-5 ml-2" />
+                {t("pricing.cta")} <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </Link>
           </div>
@@ -216,14 +219,14 @@ export default function Landing() {
       <section className="py-20 bg-gray-900">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-            Prêt à booster vos avis Google ?
+            {t("cta.title")}
           </h2>
           <p className="text-gray-400 text-lg mb-8">
-            Rejoignez les milliers de commerces qui utilisent AvisFlow pour améliorer leur réputation en ligne.
+            {t("cta.subtitle")}
           </p>
           <Link to="/register">
             <Button size="lg" className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-lg px-8 py-6">
-              Créer mon compte gratuit <ArrowRight className="w-5 h-5 ml-2" />
+              {t("cta.button")} <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
           </Link>
         </div>
@@ -239,7 +242,7 @@ export default function Landing() {
               </div>
               <span className="text-white font-semibold">AvisFlow</span>
             </div>
-            <p className="text-sm">&copy; {new Date().getFullYear()} AvisFlow. Tous droits réservés.</p>
+            <p className="text-sm">&copy; {new Date().getFullYear()} AvisFlow. {t("footer.rights")}</p>
           </div>
         </div>
       </footer>

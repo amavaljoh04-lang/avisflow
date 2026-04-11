@@ -10,7 +10,9 @@ import {
   Star, ArrowLeft, Users, Building2, MessageSquare,
   Loader2, Shield, ShieldOff, UserCog, TrendingUp,
   Trash2, Mail, Send, Settings, Save, TestTube, Lock, KeyRound,
+  FileText, Plus, Pencil,
 } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 import toast from "react-hot-toast";
 import api from "@/lib/api";
 
@@ -54,14 +56,35 @@ interface AdminReview {
   created_at: string;
 }
 
+interface BlogPost {
+  id: number;
+  title: string;
+  slug: string;
+  content: string;
+  excerpt: string;
+  cover_image_url: string;
+  lang: string;
+  is_published: number;
+  created_at: string;
+  updated_at: string;
+}
+
 export default function AdminPanel() {
   const navigate = useNavigate();
+  const { t } = useI18n();
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [businesses, setBusinesses] = useState<AdminBusiness[]>([]);
   const [reviews, setReviews] = useState<AdminReview[]>([]);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<"users" | "businesses" | "reviews" | "email" | "security">("users");
+  const [tab, setTab] = useState<"users" | "businesses" | "reviews" | "email" | "security" | "blog">("users");
+
+  // Blog management
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  const [showBlogForm, setShowBlogForm] = useState(false);
+  const [editingBlog, setEditingBlog] = useState<BlogPost | null>(null);
+  const [blogForm, setBlogForm] = useState({ title: "", content: "", excerpt: "", cover_image_url: "", lang: "fr", is_published: 1 });
+  const [savingBlog, setSavingBlog] = useState(false);
 
   // PIN security
   const [pinVerified, setPinVerified] = useState(false);
@@ -135,6 +158,7 @@ export default function AdminPanel() {
         setPinVerified(true);
         fetchAll();
         fetchEmailSettings();
+        fetchBlogPosts();
       }
       setCheckingPin(false);
     }).catch((err) => {
@@ -153,6 +177,7 @@ export default function AdminPanel() {
       setPinVerified(true);
       fetchAll();
       fetchEmailSettings();
+      fetchBlogPosts();
     } catch (err: any) {
       setPinError(err.response?.data?.detail || "PIN incorrect");
     }
@@ -267,6 +292,63 @@ export default function AdminPanel() {
     return Array.from({ length: 5 }, (_, i) => (
       <Star key={i} className={`w-3 h-3 ${i < Math.round(rating) ? "text-yellow-400 fill-yellow-400" : "text-gray-200"}`} />
     ));
+  };
+
+  // Blog CRUD
+  const fetchBlogPosts = async () => {
+    try {
+      const res = await api.get("/api/blog/admin/posts");
+      setBlogPosts(res.data);
+    } catch { /* ignore */ }
+  };
+
+  const saveBlogPost = async () => {
+    if (!blogForm.title.trim() || !blogForm.content.trim()) {
+      toast.error(t("admin.blog.error"));
+      return;
+    }
+    setSavingBlog(true);
+    try {
+      if (editingBlog) {
+        await api.put(`/api/blog/admin/posts/${editingBlog.id}`, blogForm);
+        toast.success(t("admin.blog.updated"));
+      } else {
+        await api.post("/api/blog/admin/posts", blogForm);
+        toast.success(t("admin.blog.created"));
+      }
+      setShowBlogForm(false);
+      setEditingBlog(null);
+      setBlogForm({ title: "", content: "", excerpt: "", cover_image_url: "", lang: "fr", is_published: 1 });
+      fetchBlogPosts();
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail || t("admin.blog.error"));
+    } finally {
+      setSavingBlog(false);
+    }
+  };
+
+  const deleteBlogPost = async (id: number, title: string) => {
+    if (!confirm(`Supprimer "${title}" ?`)) return;
+    try {
+      await api.delete(`/api/blog/admin/posts/${id}`);
+      toast.success(t("admin.blog.deleted"));
+      fetchBlogPosts();
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail || t("admin.blog.error"));
+    }
+  };
+
+  const startEditBlog = (post: BlogPost) => {
+    setEditingBlog(post);
+    setBlogForm({
+      title: post.title,
+      content: post.content,
+      excerpt: post.excerpt || "",
+      cover_image_url: post.cover_image_url || "",
+      lang: post.lang,
+      is_published: post.is_published,
+    });
+    setShowBlogForm(true);
   };
 
   if (checkingPin || (hasPin && !pinVerified)) {
@@ -392,6 +474,7 @@ export default function AdminPanel() {
             { key: "businesses", label: "Etablissements", icon: Building2 },
             { key: "reviews", label: "Avis", icon: MessageSquare },
             { key: "email", label: "Email", icon: Mail },
+            { key: "blog", label: "Blog", icon: FileText },
             { key: "security", label: "Securite", icon: Lock },
           ].map((t) => (
             <button
@@ -661,6 +744,131 @@ export default function AdminPanel() {
                 </Button>
                 {!smtpHost && (
                   <p className="text-xs text-amber-600">Configurez d'abord les parametres SMTP ci-dessus.</p>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Blog Tab */}
+        {tab === "blog" && (
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-blue-600" /> {t("admin.blog.title")} ({blogPosts.length})
+                  </CardTitle>
+                  <Button
+                    size="sm"
+                    className="bg-gradient-to-r from-blue-600 to-indigo-600"
+                    onClick={() => {
+                      setEditingBlog(null);
+                      setBlogForm({ title: "", content: "", excerpt: "", cover_image_url: "", lang: "fr", is_published: 1 });
+                      setShowBlogForm(!showBlogForm);
+                    }}
+                  >
+                    <Plus className="w-4 h-4 mr-1" /> {t("admin.blog.new")}
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {/* Blog Form */}
+                {showBlogForm && (
+                  <div className="mb-6 p-4 border rounded-lg bg-gray-50 space-y-4">
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>{t("admin.blog.form.title")} *</Label>
+                        <Input value={blogForm.title} onChange={(e) => setBlogForm({ ...blogForm, title: e.target.value })} placeholder="Mon article SEO" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>{t("admin.blog.form.cover")}</Label>
+                        <Input value={blogForm.cover_image_url} onChange={(e) => setBlogForm({ ...blogForm, cover_image_url: e.target.value })} placeholder="https://..." />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{t("admin.blog.form.excerpt")}</Label>
+                      <Input value={blogForm.excerpt} onChange={(e) => setBlogForm({ ...blogForm, excerpt: e.target.value })} placeholder="Resume court de l'article" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{t("admin.blog.form.content")} *</Label>
+                      <textarea
+                        className="flex min-h-[200px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-none"
+                        value={blogForm.content}
+                        onChange={(e) => setBlogForm({ ...blogForm, content: e.target.value })}
+                        placeholder="<h2>Titre</h2><p>Contenu...</p>"
+                      />
+                    </div>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label>{t("admin.blog.form.lang")}</Label>
+                        <select
+                          value={blogForm.lang}
+                          onChange={(e) => setBlogForm({ ...blogForm, lang: e.target.value })}
+                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        >
+                          <option value="fr">Francais</option>
+                          <option value="en">English</option>
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Statut</Label>
+                        <select
+                          value={blogForm.is_published}
+                          onChange={(e) => setBlogForm({ ...blogForm, is_published: parseInt(e.target.value) })}
+                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        >
+                          <option value={1}>{t("admin.blog.form.published")}</option>
+                          <option value={0}>{t("admin.blog.form.draft")}</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div className="flex gap-3">
+                      <Button onClick={saveBlogPost} disabled={savingBlog} className="bg-gradient-to-r from-blue-600 to-indigo-600">
+                        {savingBlog ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
+                        {t("admin.blog.save")}
+                      </Button>
+                      <Button variant="outline" onClick={() => { setShowBlogForm(false); setEditingBlog(null); }}>
+                        {t("admin.blog.cancel")}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Blog posts list */}
+                {blogPosts.length === 0 && !showBlogForm ? (
+                  <div className="text-center py-12">
+                    <FileText className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900">{t("admin.blog.empty")}</h3>
+                    <p className="text-gray-500 text-sm mt-1">{t("admin.blog.empty.desc")}</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {blogPosts.map((post) => (
+                      <div key={post.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-medium text-gray-900 truncate">{post.title}</h4>
+                            <Badge className={post.is_published ? "bg-green-100 text-green-700 hover:bg-green-100" : "bg-yellow-100 text-yellow-700 hover:bg-yellow-100"}>
+                              {post.is_published ? t("admin.blog.form.published") : t("admin.blog.form.draft")}
+                            </Badge>
+                            <Badge variant="outline" className="text-xs">{post.lang.toUpperCase()}</Badge>
+                          </div>
+                          <p className="text-xs text-gray-400 mt-1">
+                            {post.slug} — {new Date(post.created_at).toLocaleDateString("fr-FR")}
+                          </p>
+                        </div>
+                        <div className="flex gap-1 ml-4">
+                          <Button variant="ghost" size="sm" onClick={() => startEditBlog(post)}>
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => deleteBlogPost(post.id, post.title)}>
+                            <Trash2 className="w-4 h-4 text-red-500" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </CardContent>
             </Card>

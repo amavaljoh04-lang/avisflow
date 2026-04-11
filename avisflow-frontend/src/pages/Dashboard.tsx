@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Star, Plus, Building2, QrCode, BarChart3, LogOut, Settings, Loader2, ExternalLink } from "lucide-react";
+import { useI18n, LangSwitcher } from "@/lib/i18n";
 import toast from "react-hot-toast";
 import api from "@/lib/api";
 
@@ -28,6 +29,7 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ user, onLogout }: DashboardProps) {
+  const { t } = useI18n();
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
@@ -42,7 +44,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
       const res = await api.get("/api/businesses");
       setBusinesses(res.data);
     } catch {
-      toast.error("Erreur lors du chargement");
+      toast.error(t("dash.error.load"));
     } finally {
       setLoading(false);
     }
@@ -55,12 +57,12 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
     setCreating(true);
     try {
       await api.post("/api/businesses", form);
-      toast.success("Établissement créé !");
+      toast.success(t("dash.created"));
       setShowCreate(false);
       setForm({ name: "", category: "", address: "", phone: "", google_review_url: "", positive_threshold: 4 });
       fetchBusinesses();
     } catch (err: any) {
-      toast.error(err.response?.data?.detail || "Erreur lors de la création");
+      toast.error(err.response?.data?.detail || t("dash.error.create"));
     } finally {
       setCreating(false);
     }
@@ -78,10 +80,11 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
             <span className="text-xl font-bold text-gray-900">AvisFlow</span>
           </div>
           <div className="flex items-center gap-4">
+            <LangSwitcher />
             {user?.role === "admin" && (
               <Link to="/admin">
                 <Button variant="outline" size="sm">
-                  <Settings className="w-4 h-4 mr-1" /> Admin
+                  <Settings className="w-4 h-4 mr-1" /> {t("nav.admin")}
                 </Button>
               </Link>
             )}
@@ -97,11 +100,11 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Mes établissements</h1>
-            <p className="text-gray-500 mt-1">Gérez vos établissements et collectez des avis</p>
+            <h1 className="text-2xl font-bold text-gray-900">{t("dash.title")}</h1>
+            <p className="text-gray-500 mt-1">{t("dash.subtitle")}</p>
           </div>
           <Button onClick={() => setShowCreate(!showCreate)} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700">
-            <Plus className="w-4 h-4 mr-2" /> Ajouter
+            <Plus className="w-4 h-4 mr-2" /> {t("dash.add")}
           </Button>
         </div>
 
@@ -109,40 +112,40 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
         {showCreate && (
           <Card className="mb-8 border-blue-200 shadow-lg">
             <CardHeader>
-              <CardTitle className="text-lg">Nouvel établissement</CardTitle>
+              <CardTitle className="text-lg">{t("dash.new")}</CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleCreate} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Nom de l'établissement *</Label>
+                  <Label>{t("dash.name")} *</Label>
                   <Input placeholder="Mon Restaurant" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
                 </div>
                 <div className="space-y-2">
-                  <Label>Catégorie</Label>
-                  <Input placeholder="Restaurant, Coiffeur, etc." value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
+                  <Label>{t("dash.category")}</Label>
+                  <Input placeholder={t("dash.category.placeholder")} value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Adresse</Label>
+                  <Label>{t("dash.address")}</Label>
                   <Input placeholder="12 Rue de la Paix, Paris" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Téléphone</Label>
+                  <Label>{t("dash.phone")}</Label>
                   <Input placeholder="01 23 45 67 89" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
                 </div>
                 <div className="space-y-2 md:col-span-2">
-                  <Label>Lien avis Google *</Label>
+                  <Label>{t("dash.google_url")} *</Label>
                   <Input placeholder="https://g.page/r/..." value={form.google_review_url} onChange={(e) => setForm({ ...form, google_review_url: e.target.value })} required />
                   <p className="text-xs text-gray-400">Trouvez ce lien dans Google My Business &rarr; Demander des avis</p>
                 </div>
                 <div className="space-y-2">
-                  <Label>Seuil positif (étoiles)</Label>
+                  <Label>{t("dash.threshold")}</Label>
                   <Input type="number" min={1} max={5} value={form.positive_threshold} onChange={(e) => setForm({ ...form, positive_threshold: parseInt(e.target.value) || 4 })} />
                   <p className="text-xs text-gray-400">Les notes &ge; ce seuil seront redirigées vers Google</p>
                 </div>
                 <div className="flex items-end">
                   <Button type="submit" className="bg-gradient-to-r from-blue-600 to-indigo-600" disabled={creating}>
                     {creating ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                    Créer l'établissement
+                    {t("dash.create")}
                   </Button>
                 </div>
               </form>
@@ -158,10 +161,10 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
         ) : businesses.length === 0 ? (
           <div className="text-center py-20">
             <Building2 className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Aucun établissement</h3>
-            <p className="text-gray-500 mb-6">Créez votre premier établissement pour commencer à collecter des avis</p>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">{t("dash.none.title")}</h3>
+            <p className="text-gray-500 mb-6">{t("dash.none.desc")}</p>
             <Button onClick={() => setShowCreate(true)} className="bg-gradient-to-r from-blue-600 to-indigo-600">
-              <Plus className="w-4 h-4 mr-2" /> Ajouter un établissement
+              <Plus className="w-4 h-4 mr-2" /> {t("dash.none.button")}
             </Button>
           </div>
         ) : (
@@ -174,7 +177,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                       <Building2 className="w-6 h-6 text-blue-600" />
                     </div>
                     <Badge variant={biz.is_active ? "default" : "secondary"} className={biz.is_active ? "bg-green-100 text-green-700 hover:bg-green-100" : ""}>
-                      {biz.is_active ? "Actif" : "Inactif"}
+                      {biz.is_active ? t("dash.active") : t("dash.inactive")}
                     </Badge>
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">{biz.name}</h3>
@@ -182,10 +185,10 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                   {biz.address && <p className="text-xs text-gray-400 mt-1">{biz.address}</p>}
                   <div className="mt-4 pt-4 border-t flex items-center gap-4">
                     <div className="flex items-center gap-1 text-sm text-gray-500">
-                      <QrCode className="w-4 h-4" /> QR Codes
+                      <QrCode className="w-4 h-4" /> {t("dash.qrcodes")}
                     </div>
                     <div className="flex items-center gap-1 text-sm text-gray-500">
-                      <BarChart3 className="w-4 h-4" /> Analytics
+                      <BarChart3 className="w-4 h-4" /> {t("dash.analytics")}
                     </div>
                     <ExternalLink className="w-4 h-4 text-gray-300 ml-auto group-hover:text-blue-400 transition-colors" />
                   </div>

@@ -90,6 +90,23 @@ def init_db():
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
 
+        CREATE TABLE IF NOT EXISTS blog_posts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            slug TEXT UNIQUE NOT NULL,
+            content TEXT NOT NULL,
+            excerpt TEXT,
+            cover_image_url TEXT,
+            lang TEXT NOT NULL DEFAULT 'fr',
+            is_published INTEGER DEFAULT 1,
+            author_id INTEGER,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (author_id) REFERENCES users(id)
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_blog_slug ON blog_posts(slug);
+        CREATE INDEX IF NOT EXISTS idx_blog_lang ON blog_posts(lang);
         CREATE INDEX IF NOT EXISTS idx_reviews_business ON reviews(business_id);
         CREATE INDEX IF NOT EXISTS idx_reviews_created ON reviews(created_at);
         CREATE INDEX IF NOT EXISTS idx_businesses_user ON businesses(user_id);

@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Star, Send, Loader2, CheckCircle2, MessageSquare } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 import toast, { Toaster } from "react-hot-toast";
 import api from "@/lib/api";
 
@@ -20,6 +21,7 @@ interface BusinessInfo {
 
 export default function ReviewPage() {
   const { slug } = useParams();
+  const { t } = useI18n();
   const [business, setBusiness] = useState<BusinessInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -37,7 +39,7 @@ export default function ReviewPage() {
         const res = await api.get(`/api/r/${slug}/info`);
         setBusiness(res.data);
       } catch {
-        setError("Établissement introuvable");
+        setError(t("review.not_found"));
       } finally {
         setLoading(false);
       }
@@ -64,12 +66,12 @@ export default function ReviewPage() {
           customer_email: null,
         });
         // Redirect to Google immediately
-        toast.success("Merci ! Redirection vers Google...");
+        toast.success(t("review.redirect"));
         setTimeout(() => {
           window.location.href = business.google_review_url!;
         }, 800);
       } catch {
-        toast.error("Erreur, veuillez réessayer");
+        toast.error(t("review.error"));
         setSubmitting(false);
       }
     }
@@ -78,7 +80,7 @@ export default function ReviewPage() {
 
   const handleSubmitNegative = async () => {
     if (rating === 0) {
-      toast.error("Veuillez sélectionner une note");
+      toast.error(t("review.select"));
       return;
     }
     setSubmitting(true);
@@ -90,9 +92,9 @@ export default function ReviewPage() {
         customer_email: customerEmail || null,
       });
       setSubmitted(true);
-      toast.success("Merci pour votre retour !");
+      toast.success(t("review.thanks"));
     } catch (err: any) {
-      toast.error(err.response?.data?.detail || "Erreur lors de l'envoi");
+      toast.error(err.response?.data?.detail || t("review.send_error"));
     } finally {
       setSubmitting(false);
     }
@@ -132,9 +134,9 @@ export default function ReviewPage() {
             <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle2 className="w-8 h-8 text-blue-600" />
             </div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">Merci pour votre retour !</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">{t("review.thanks")}</h2>
             <p className="text-gray-500">
-              Votre avis a bien été enregistré. {business?.name} prend en compte tous les retours pour s'améliorer.
+              {t("review.recorded")} {business?.name} {t("review.improves")}
             </p>
           </CardContent>
         </Card>
@@ -160,7 +162,7 @@ export default function ReviewPage() {
         <Card className="shadow-xl border-0">
           <CardContent className="p-6">
             <h2 className="text-lg font-semibold text-center text-gray-900 mb-6">
-              Comment était votre expérience ?
+              {t("review.experience")}
             </h2>
 
             {/* Star Rating */}
@@ -191,7 +193,7 @@ export default function ReviewPage() {
               <div className="text-center py-4 animate-in fade-in duration-300">
                 <Loader2 className="w-6 h-6 animate-spin text-blue-600 mx-auto mb-2" />
                 <p className="text-sm font-medium text-gray-600">
-                  Redirection vers Google...
+                  {t("review.redirect")}
                 </p>
               </div>
             )}
@@ -200,9 +202,9 @@ export default function ReviewPage() {
             {rating > 0 && !isPositive(rating) && !submitting && (
               <div className="text-center mb-6">
                 <p className="text-sm font-medium text-gray-600">
-                  {rating === 3 && "Merci pour votre retour"}
-                  {rating === 2 && "Nous sommes désolés..."}
-                  {rating === 1 && "Nous sommes navrés de votre expérience"}
+                  {rating === 3 && t("review.sorry3")}
+                  {rating === 2 && t("review.sorry2")}
+                  {rating === 1 && t("review.sorry1")}
                 </p>
               </div>
             )}
@@ -212,23 +214,23 @@ export default function ReviewPage() {
               <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
                 <div className="space-y-2">
                   <Label htmlFor="feedback" className="text-sm">
-                    Dites-nous comment nous améliorer
+                    {t("review.feedback")}
                   </Label>
                   <textarea
                     id="feedback"
                     className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
-                    placeholder="Votre commentaire..."
+                    placeholder={t("review.comment")}
                     value={feedback}
                     onChange={(e) => setFeedback(e.target.value)}
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
-                    <Label htmlFor="name" className="text-sm">Nom (optionnel)</Label>
+                    <Label htmlFor="name" className="text-sm">{t("review.name")}</Label>
                     <Input id="name" placeholder="Jean" value={customerName} onChange={(e) => setCustomerName(e.target.value)} />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="text-sm">Email (optionnel)</Label>
+                    <Label htmlFor="email" className="text-sm">{t("review.email_opt")}</Label>
                     <Input id="email" type="email" placeholder="jean@..." value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} />
                   </div>
                 </div>
@@ -238,7 +240,7 @@ export default function ReviewPage() {
                   className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 py-6 text-base"
                 >
                   {submitting ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <Send className="w-5 h-5 mr-2" />}
-                  Envoyer mon avis
+                  {t("review.send")}
                 </Button>
               </div>
             )}
@@ -246,7 +248,7 @@ export default function ReviewPage() {
         </Card>
 
         <p className="text-center text-xs text-gray-400 mt-6">
-          Propulsé par <span className="font-medium text-gray-500">AvisFlow</span>
+          {t("review.powered")} <span className="font-medium text-gray-500">AvisFlow</span>
         </p>
       </div>
     </div>

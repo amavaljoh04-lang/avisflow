@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import init_db
-from app.routers import auth, businesses, reviews, qrcodes, analytics, admin
+from app.routers import auth, businesses, reviews, qrcodes, analytics, admin, blog
 
 app = FastAPI(title="AvisFlow API", version="1.0.0")
 
@@ -20,6 +20,7 @@ app.include_router(reviews.router)
 app.include_router(qrcodes.router)
 app.include_router(analytics.router)
 app.include_router(admin.router)
+app.include_router(blog.router)
 
 
 @app.on_event("startup")
