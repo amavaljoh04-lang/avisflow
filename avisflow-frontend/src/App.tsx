@@ -11,6 +11,7 @@ import ReviewPage from "@/pages/ReviewPage";
 import AdminPanel from "@/pages/AdminPanel";
 import BlogList from "@/pages/BlogList";
 import BlogPost from "@/pages/BlogPost";
+import VerifyEmail from "@/pages/VerifyEmail";
 
 function ProtectedRoute({ children, user }: { children: React.ReactNode; user: any }) {
   if (!user) return <Navigate to="/login" replace />;
@@ -52,6 +53,7 @@ export default function App() {
           <Route path="/business/:id" element={<ProtectedRoute user={user}><BusinessDetail /></ProtectedRoute>} />
           <Route path="/admin" element={<AdminRoute user={user}><AdminPanel /></AdminRoute>} />
           <Route path="/review/:slug" element={<ReviewPage />} />
+          <Route path="/verify" element={<VerifyEmail />} />
           <Route path="/blog" element={<BlogList />} />
           <Route path="/blog/:slug" element={<BlogPost />} />
           <Route path="*" element={<Navigate to="/" replace />} />

@@ -67,9 +67,11 @@ export default function BusinessDetail() {
   const [editColor, setEditColor] = useState("#2563eb");
   const [editThreshold, setEditThreshold] = useState(4);
   const [saving, setSaving] = useState(false);
+  const [loadError, setLoadError] = useState(false);
 
-  const fetchAll = async () => {
+  const fetchAll = async (isInitial = true) => {
     try {
+      setLoadError(false);
       const [bizRes, analyticsRes, reviewsRes, qrRes] = await Promise.all([
         api.get(`/api/businesses/${id}`),
         api.get(`/api/businesses/${id}/analytics`),
@@ -100,14 +102,16 @@ export default function BusinessDetail() {
       }
       setQrImages(images);
     } catch {
+      if (isInitial) {
+        setLoadError(true);
+      }
       toast.error("Erreur lors du chargement");
-      navigate("/dashboard");
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { fetchAll(); }, [id]);
+  useEffect(() => { fetchAll(true); }, [id]);
 
   const createQR = async () => {
     setCreatingQR(true);
@@ -115,7 +119,7 @@ export default function BusinessDetail() {
       await api.post(`/api/businesses/${id}/qrcodes`, { label: qrLabel || "QR Code principal" });
       toast.success("QR Code créé !");
       setQrLabel("");
-      fetchAll();
+      await fetchAll(false);
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Erreur");
     } finally {
@@ -143,7 +147,7 @@ export default function BusinessDetail() {
     try {
       await api.delete(`/api/businesses/${id}/qrcodes/${qrId}`);
       toast.success("QR Code supprimé");
-      fetchAll();
+      await fetchAll(false);
     } catch {
       toast.error("Erreur");
     }
@@ -180,6 +184,17 @@ export default function BusinessDetail() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-500 mb-4">Erreur lors du chargement de l'établissement</p>
+          <Button onClick={() => navigate("/dashboard")} variant="outline">Retour au dashboard</Button>
+        </div>
       </div>
     );
   }

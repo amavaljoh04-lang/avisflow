@@ -100,6 +100,19 @@ const translations: Record<Lang, Record<string, string>> = {
     "auth.error.register": "Erreur lors de l'inscription",
     "auth.error.password": "Le mot de passe doit contenir au moins 6 caracteres",
 
+    // Email verification
+    "auth.verify.title": "Verifiez votre email",
+    "auth.verify.desc": "Un email de confirmation a ete envoye a :",
+    "auth.verify.spam": "Verifiez aussi vos spams si vous ne trouvez pas l'email.",
+    "auth.verify.resend": "Renvoyer l'email",
+    "auth.verify.resent": "Email de verification renvoye !",
+    "auth.verify.sent": "Email de verification envoye ! Verifiez votre boite de reception.",
+    "auth.verify.required": "Email non verifie",
+    "auth.verify.check_inbox": "Verifiez votre boite de reception et cliquez sur le lien de confirmation.",
+    "auth.verify.success": "Email verifie ! Vous pouvez maintenant vous connecter.",
+    "auth.verify.error": "Lien de verification invalide ou expire.",
+    "auth.verify.already": "Cet email est deja verifie.",
+
     // Dashboard
     "dash.title": "Mes etablissements",
     "dash.subtitle": "Gerez vos etablissements et collectez des avis",
@@ -273,6 +286,19 @@ const translations: Record<Lang, Record<string, string>> = {
     "auth.error.login": "Login error",
     "auth.error.register": "Registration error",
     "auth.error.password": "Password must be at least 6 characters",
+
+    // Email verification
+    "auth.verify.title": "Check your email",
+    "auth.verify.desc": "A confirmation email has been sent to:",
+    "auth.verify.spam": "Check your spam folder if you don't see the email.",
+    "auth.verify.resend": "Resend email",
+    "auth.verify.resent": "Verification email resent!",
+    "auth.verify.sent": "Verification email sent! Check your inbox.",
+    "auth.verify.required": "Email not verified",
+    "auth.verify.check_inbox": "Check your inbox and click the confirmation link.",
+    "auth.verify.success": "Email verified! You can now sign in.",
+    "auth.verify.error": "Invalid or expired verification link.",
+    "auth.verify.already": "This email is already verified.",
 
     // Dashboard
     "dash.title": "My locations",

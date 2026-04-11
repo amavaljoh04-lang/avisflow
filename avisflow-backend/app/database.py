@@ -39,7 +39,9 @@ def init_db():
             full_name TEXT NOT NULL,
             role TEXT NOT NULL DEFAULT 'user',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            is_active INTEGER DEFAULT 1
+            is_active INTEGER DEFAULT 1,
+            is_verified INTEGER DEFAULT 0,
+            verification_token TEXT
         );
 
         CREATE TABLE IF NOT EXISTS businesses (
@@ -112,3 +114,14 @@ def init_db():
         CREATE INDEX IF NOT EXISTS idx_businesses_user ON businesses(user_id);
         CREATE INDEX IF NOT EXISTS idx_businesses_slug ON businesses(slug);
         """)
+        # Migration: add is_verified and verification_token columns to existing users table
+        try:
+            db.execute("ALTER TABLE users ADD COLUMN is_verified INTEGER DEFAULT 0")
+        except Exception:
+            pass  # column already exists
+        try:
+            db.execute("ALTER TABLE users ADD COLUMN verification_token TEXT")
+        except Exception:
+            pass  # column already exists
+        # Mark all existing users as verified (they registered before this feature)
+        db.execute("UPDATE users SET is_verified = 1 WHERE is_verified IS NULL OR (is_verified = 0 AND verification_token IS NULL)")

@@ -60,7 +60,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
       toast.success(t("dash.created"));
       setShowCreate(false);
       setForm({ name: "", category: "", address: "", phone: "", google_review_url: "", positive_threshold: 4 });
-      fetchBusinesses();
+      await fetchBusinesses();
     } catch (err: any) {
       toast.error(err.response?.data?.detail || t("dash.error.create"));
     } finally {
