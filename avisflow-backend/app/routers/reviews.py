@@ -51,7 +51,7 @@ async def submit_review(slug: str, data: ReviewSubmit):
         return {
             "message": "Thank you for your feedback!",
             "redirect_to_google": bool(redirected),
-            "google_url": google_url,
+            "google_review_url": google_url,
             "business_name": biz["name"],
         }
 
