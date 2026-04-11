@@ -1,4 +1,5 @@
 import io
+import os
 import base64
 import qrcode
 from fastapi import APIRouter, HTTPException, Depends
@@ -6,6 +7,8 @@ from fastapi.responses import Response
 from app.database import get_db
 from app.models.schemas import QRCodeCreate, QRCodeResponse
 from app.utils.auth import get_current_user
+
+BASE_URL = os.environ.get("BASE_URL", "https://avisflow.online")
 
 router = APIRouter(prefix="/api/businesses/{business_id}/qrcodes", tags=["qrcodes"])
 
@@ -62,7 +65,7 @@ async def get_qrcode_image(business_id: int, qr_id: int):
         if not qr_record:
             raise HTTPException(status_code=404, detail="QR code not found")
 
-        review_url = f"https://avisflow.online/review/{biz['slug']}"
+        review_url = f"{BASE_URL}/review/{biz['slug']}"
 
         qr = qrcode.QRCode(version=1, box_size=10, border=4)
         qr.add_data(review_url)
@@ -93,7 +96,7 @@ async def get_qrcode_data(business_id: int, qr_id: int, user: dict = Depends(get
         if not qr_record:
             raise HTTPException(status_code=404, detail="QR code not found")
 
-        review_url = f"https://avisflow.online/review/{biz['slug']}"
+        review_url = f"{BASE_URL}/review/{biz['slug']}"
 
         qr = qrcode.QRCode(version=1, box_size=10, border=4)
         qr.add_data(review_url)

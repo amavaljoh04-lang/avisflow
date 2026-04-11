@@ -6,6 +6,7 @@ services:
     environment:
       - DATABASE_PATH=/data/avisflow.db
       - SECRET_KEY=${SECRET_KEY:-change-me-in-production-use-a-long-random-string}
+      - BASE_URL=${BASE_URL:-https://avisflow.online}
     volumes:
       - avisflow-data:/data
     ports:
