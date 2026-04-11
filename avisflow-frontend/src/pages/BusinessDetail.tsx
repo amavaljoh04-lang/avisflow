@@ -353,7 +353,7 @@ export default function BusinessDetail() {
                       </div>
                       <div className="bg-gray-50 rounded-xl p-4 flex items-center justify-center mb-4">
                         <img
-                          src={`${import.meta.env.VITE_API_URL || "http://localhost:8000"}/api/businesses/${id}/qrcodes/${qr.id}/image`}
+                          src={`${import.meta.env.VITE_API_URL || ""}/api/businesses/${id}/qrcodes/${qr.id}/image`}
                           alt={`QR Code - ${qr.label}`}
                           className="w-48 h-48"
                           crossOrigin="anonymous"
