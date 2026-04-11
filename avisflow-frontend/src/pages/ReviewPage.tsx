@@ -8,6 +8,7 @@ import { Star, Send, Loader2, CheckCircle2, MessageSquare } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import toast, { Toaster } from "react-hot-toast";
 import api from "@/lib/api";
+import SEO from "@/components/SEO";
 
 interface BusinessInfo {
   name: string;
@@ -148,6 +149,7 @@ export default function ReviewPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4">
+      <SEO title={`${t("review.experience")} - ${business?.name || ""}`} description={`Donnez votre avis sur ${business?.name || "cet etablissement"}`} />
       <Toaster position="top-center" />
       <div className="w-full max-w-md">
         {/* Logo */}

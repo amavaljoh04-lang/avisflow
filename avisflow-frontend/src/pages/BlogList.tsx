@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Star, ArrowRight, BookOpen, Loader2 } from "lucide-react";
 import { useI18n, LangSwitcher } from "@/lib/i18n";
 import api from "@/lib/api";
+import SEO from "@/components/SEO";
 
 interface BlogPost {
   id: number;
@@ -29,6 +30,7 @@ export default function BlogList() {
 
   return (
     <div className="min-h-screen bg-white">
+      <SEO title={t("blog.title")} description="Articles et conseils pour ameliorer vos avis Google et votre reputation en ligne." />
       {/* Nav */}
       <nav className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">

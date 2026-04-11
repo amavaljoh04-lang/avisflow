@@ -8,6 +8,7 @@ import { Star, Loader2, Mail } from "lucide-react";
 import { useI18n, LangSwitcher } from "@/lib/i18n";
 import toast from "react-hot-toast";
 import api from "@/lib/api";
+import SEO from "@/components/SEO";
 
 interface RegisterProps {
   onLogin: (token: string, user: any) => void;
@@ -100,6 +101,7 @@ export default function Register({ onLogin }: RegisterProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4">
+      <SEO title={t("auth.register")} />
       <div className="absolute top-4 right-4"><LangSwitcher /></div>
       <div className="w-full max-w-md">
         <div className="text-center mb-8">

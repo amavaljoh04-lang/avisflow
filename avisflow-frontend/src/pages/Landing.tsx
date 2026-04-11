@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Star, QrCode, Shield, TrendingUp, ArrowRight, CheckCircle2, BarChart3, MessageSquare } from "lucide-react";
 import { useI18n, LangSwitcher } from "@/lib/i18n";
 import api from "@/lib/api";
+import SEO from "@/components/SEO";
 
 interface PublicStats {
   total_businesses: number;
@@ -23,6 +24,7 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-white">
+      <SEO title={undefined} description="AvisFlow aide les commerces locaux a collecter plus d'avis Google positifs grace aux QR codes. Gratuit, simple et efficace." />
       {/* Nav */}
       <nav className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
