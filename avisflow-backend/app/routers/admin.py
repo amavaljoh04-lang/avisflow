@@ -27,6 +27,52 @@ class PromoEmail(BaseModel):
     target: str = "all"  # "all" or "active"
 
 
+class AdminPinCheck(BaseModel):
+    pin: str
+
+
+class AdminPinSet(BaseModel):
+    pin: str
+
+
+@router.post("/verify-pin")
+async def verify_admin_pin(data: AdminPinCheck, admin: dict = Depends(require_admin)):
+    """Verify admin PIN to access admin panel."""
+    import hashlib
+    with get_db() as db:
+        row = db.execute("SELECT value FROM settings WHERE key = 'admin_pin'").fetchone()
+        if not row:
+            raise HTTPException(status_code=400, detail="PIN admin non configure")
+        stored_hash = row["value"]
+        input_hash = hashlib.sha256(data.pin.encode()).hexdigest()
+        if input_hash != stored_hash:
+            raise HTTPException(status_code=403, detail="PIN incorrect")
+        return {"verified": True}
+
+
+@router.get("/pin-status")
+async def admin_pin_status(admin: dict = Depends(require_admin)):
+    """Check if admin PIN is configured."""
+    with get_db() as db:
+        row = db.execute("SELECT value FROM settings WHERE key = 'admin_pin'").fetchone()
+        return {"has_pin": row is not None}
+
+
+@router.put("/set-pin")
+async def set_admin_pin(data: AdminPinSet, admin: dict = Depends(require_admin)):
+    """Set or update admin PIN."""
+    import hashlib
+    if len(data.pin) < 4:
+        raise HTTPException(status_code=400, detail="Le PIN doit contenir au moins 4 caracteres")
+    pin_hash = hashlib.sha256(data.pin.encode()).hexdigest()
+    with get_db() as db:
+        db.execute(
+            "INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES ('admin_pin', ?, CURRENT_TIMESTAMP)",
+            (pin_hash,),
+        )
+        return {"message": "PIN admin configure"}
+
+
 @router.get("/stats", response_model=AdminStats)
 async def get_admin_stats(user: dict = Depends(require_admin)):
     with get_db() as db:

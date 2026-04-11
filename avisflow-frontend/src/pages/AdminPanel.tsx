@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import {
   Star, ArrowLeft, Users, Building2, MessageSquare,
   Loader2, Shield, ShieldOff, UserCog, TrendingUp,
-  Trash2, Mail, Send, Settings, Save, TestTube,
+  Trash2, Mail, Send, Settings, Save, TestTube, Lock, KeyRound,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "@/lib/api";
@@ -61,7 +61,16 @@ export default function AdminPanel() {
   const [businesses, setBusinesses] = useState<AdminBusiness[]>([]);
   const [reviews, setReviews] = useState<AdminReview[]>([]);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<"users" | "businesses" | "reviews" | "email">("users");
+  const [tab, setTab] = useState<"users" | "businesses" | "reviews" | "email" | "security">("users");
+
+  // PIN security
+  const [pinVerified, setPinVerified] = useState(false);
+  const [hasPin, setHasPin] = useState(true);
+  const [pinInput, setPinInput] = useState("");
+  const [pinError, setPinError] = useState("");
+  const [checkingPin, setCheckingPin] = useState(true);
+  const [newPin, setNewPin] = useState("");
+  const [savingPin, setSavingPin] = useState(false);
 
   // Email settings
   const [smtpHost, setSmtpHost] = useState("");
@@ -117,7 +126,55 @@ export default function AdminPanel() {
     }
   };
 
-  useEffect(() => { fetchAll(); fetchEmailSettings(); }, []);
+  useEffect(() => {
+    // Check if PIN is configured
+    api.get("/api/admin/pin-status").then((res) => {
+      setHasPin(res.data.has_pin);
+      if (!res.data.has_pin) {
+        // No PIN set yet, allow access but prompt to set one
+        setPinVerified(true);
+        fetchAll();
+        fetchEmailSettings();
+      }
+      setCheckingPin(false);
+    }).catch((err) => {
+      if (err.response?.status === 403) {
+        toast.error("Acces interdit");
+        navigate("/dashboard");
+      }
+      setCheckingPin(false);
+    });
+  }, []);
+
+  const verifyPin = async () => {
+    setPinError("");
+    try {
+      await api.post("/api/admin/verify-pin", { pin: pinInput });
+      setPinVerified(true);
+      fetchAll();
+      fetchEmailSettings();
+    } catch (err: any) {
+      setPinError(err.response?.data?.detail || "PIN incorrect");
+    }
+  };
+
+  const saveNewPin = async () => {
+    if (newPin.length < 4) {
+      toast.error("Le PIN doit contenir au moins 4 caracteres");
+      return;
+    }
+    setSavingPin(true);
+    try {
+      await api.put("/api/admin/set-pin", { pin: newPin });
+      toast.success("PIN admin configure !");
+      setHasPin(true);
+      setNewPin("");
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail || "Erreur");
+    } finally {
+      setSavingPin(false);
+    }
+  };
 
   const toggleUserRole = async (userId: number, currentRole: string) => {
     const newRole = currentRole === "admin" ? "user" : "admin";
@@ -212,6 +269,46 @@ export default function AdminPanel() {
     ));
   };
 
+  if (checkingPin || (hasPin && !pinVerified)) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        {checkingPin ? (
+          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+        ) : (
+          <Card className="w-full max-w-sm mx-4">
+            <CardHeader className="text-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Lock className="w-8 h-8 text-white" />
+              </div>
+              <CardTitle className="text-xl">Administration</CardTitle>
+              <p className="text-sm text-gray-500 mt-1">Entrez le code PIN pour acceder au panel admin</p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Input
+                  type="password"
+                  placeholder="Code PIN"
+                  value={pinInput}
+                  onChange={(e) => { setPinInput(e.target.value); setPinError(""); }}
+                  onKeyDown={(e) => e.key === "Enter" && verifyPin()}
+                  className="text-center text-2xl tracking-widest"
+                  autoFocus
+                />
+                {pinError && <p className="text-sm text-red-500 text-center">{pinError}</p>}
+              </div>
+              <Button onClick={verifyPin} disabled={!pinInput} className="w-full bg-gradient-to-r from-blue-600 to-indigo-600">
+                <KeyRound className="w-4 h-4 mr-2" /> Verifier
+              </Button>
+              <Button variant="ghost" size="sm" className="w-full" onClick={() => navigate("/dashboard")}>
+                <ArrowLeft className="w-4 h-4 mr-1" /> Retour au dashboard
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -272,6 +369,22 @@ export default function AdminPanel() {
           ))}
         </div>
 
+        {/* PIN Warning Banner */}
+        {!hasPin && (
+          <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-xl p-4 flex items-center gap-3">
+            <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center shrink-0">
+              <Lock className="w-5 h-5 text-yellow-600" />
+            </div>
+            <div className="flex-1">
+              <p className="font-medium text-yellow-800">Securite : aucun code PIN configure</p>
+              <p className="text-sm text-yellow-600">Configurez un code PIN pour proteger l'acces a ce panel admin.</p>
+            </div>
+            <Button size="sm" className="bg-yellow-600 hover:bg-yellow-700" onClick={() => setTab("security")}>
+              Configurer
+            </Button>
+          </div>
+        )}
+
         {/* Tabs */}
         <div className="flex gap-1 bg-white rounded-lg p-1 border mb-6 overflow-x-auto">
           {[
@@ -279,6 +392,7 @@ export default function AdminPanel() {
             { key: "businesses", label: "Etablissements", icon: Building2 },
             { key: "reviews", label: "Avis", icon: MessageSquare },
             { key: "email", label: "Email", icon: Mail },
+            { key: "security", label: "Securite", icon: Lock },
           ].map((t) => (
             <button
               key={t.key}
@@ -548,6 +662,81 @@ export default function AdminPanel() {
                 {!smtpHost && (
                   <p className="text-xs text-amber-600">Configurez d'abord les parametres SMTP ci-dessus.</p>
                 )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Security Tab */}
+        {tab === "security" && (
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Lock className="w-5 h-5 text-blue-600" /> Code PIN d'acces
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-gray-600">
+                  Le code PIN protege l'acces au panel d'administration. Chaque fois que vous accedez a cette page, vous devrez entrer ce code.
+                </p>
+                <div className="flex gap-3 items-end">
+                  <div className="flex-1 space-y-2">
+                    <Label htmlFor="new-pin">{hasPin ? "Changer le code PIN" : "Definir un code PIN"}</Label>
+                    <Input
+                      id="new-pin"
+                      type="password"
+                      value={newPin}
+                      onChange={(e) => setNewPin(e.target.value)}
+                      placeholder="Minimum 4 caracteres"
+                      className="max-w-xs"
+                    />
+                  </div>
+                  <Button
+                    onClick={saveNewPin}
+                    disabled={savingPin || newPin.length < 4}
+                    className="bg-gradient-to-r from-blue-600 to-indigo-600"
+                  >
+                    {savingPin ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
+                    {hasPin ? "Modifier" : "Activer"}
+                  </Button>
+                </div>
+                {hasPin && (
+                  <div className="flex items-center gap-2 text-sm text-green-600">
+                    <Shield className="w-4 h-4" /> Code PIN actif — le panel est protege
+                  </div>
+                )}
+                {!hasPin && (
+                  <div className="flex items-center gap-2 text-sm text-yellow-600">
+                    <ShieldOff className="w-4 h-4" /> Aucun code PIN — le panel n'est pas protege
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Shield className="w-5 h-5 text-green-600" /> Securite du compte
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm text-gray-600">
+                <div className="flex items-center gap-2">
+                  <Shield className="w-4 h-4 text-green-500" />
+                  <span>Authentification JWT active</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Shield className="w-4 h-4 text-green-500" />
+                  <span>Role admin requis pour acceder a ce panel</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {hasPin ? <Shield className="w-4 h-4 text-green-500" /> : <ShieldOff className="w-4 h-4 text-yellow-500" />}
+                  <span>{hasPin ? "Code PIN actif" : "Code PIN non configure"}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Shield className="w-4 h-4 text-green-500" />
+                  <span>Mots de passe haches (bcrypt)</span>
+                </div>
               </CardContent>
             </Card>
           </div>
