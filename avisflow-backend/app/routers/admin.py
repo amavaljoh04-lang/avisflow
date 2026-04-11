@@ -219,14 +219,20 @@ async def test_email(admin: dict = Depends(require_admin)):
     settings = _get_email_settings()
     if not settings:
         raise HTTPException(status_code=400, detail="Configurez d'abord les parametres email")
+    # Get admin email from database (JWT only has id and role)
+    with get_db() as db:
+        admin_user = db.execute("SELECT email FROM users WHERE id = ?", (admin["id"],)).fetchone()
+        if not admin_user:
+            raise HTTPException(status_code=404, detail="Utilisateur non trouve")
+        admin_email = admin_user["email"]
     try:
         _send_email(
             settings,
-            to_email=admin["email"],
+            to_email=admin_email,
             subject="AvisFlow - Test Email",
             body="<h1>Ca marche !</h1><p>Votre configuration email AvisFlow fonctionne correctement.</p>",
         )
-        return {"message": f"Email de test envoye a {admin['email']}"}
+        return {"message": f"Email de test envoye a {admin_email}"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur d'envoi: {str(e)}")
 
