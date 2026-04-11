@@ -73,6 +73,10 @@ async def get_business_public_info(slug: str):
             "category": biz["category"],
             "primary_color": biz["primary_color"],
             "logo_url": biz["logo_url"],
+            "positive_threshold": biz["positive_threshold"],
+            "google_review_url": db.execute(
+                "SELECT google_review_url FROM businesses WHERE id = ?", (biz["id"],)
+            ).fetchone()["google_review_url"],
         }
 
 

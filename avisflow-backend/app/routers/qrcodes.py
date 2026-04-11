@@ -8,7 +8,7 @@ from app.database import get_db
 from app.models.schemas import QRCodeCreate, QRCodeResponse
 from app.utils.auth import get_current_user
 
-BASE_URL = os.environ.get("BASE_URL", "https://avisflow.online")
+BASE_URL = os.environ.get("BASE_URL", "https://avisflow.online").rstrip("/")
 
 router = APIRouter(prefix="/api/businesses/{business_id}/qrcodes", tags=["qrcodes"])
 
