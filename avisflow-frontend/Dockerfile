@@ -12,7 +12,10 @@ FROM nginx:alpine
 
 COPY --from=builder /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx-ssl.conf /etc/nginx/ssl.conf
+COPY docker-entrypoint.sh /docker-entrypoint-ssl.sh
+RUN chmod +x /docker-entrypoint-ssl.sh
 
 EXPOSE 80 443
 
-CMD ["nginx", "-g", "daemon off;"]
+ENTRYPOINT ["/docker-entrypoint-ssl.sh"]
