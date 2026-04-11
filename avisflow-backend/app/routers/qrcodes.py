@@ -46,11 +46,11 @@ async def list_qrcodes(business_id: int, user: dict = Depends(get_current_user))
 
 
 @router.get("/{qr_id}/image")
-async def get_qrcode_image(business_id: int, qr_id: int, user: dict = Depends(get_current_user)):
+async def get_qrcode_image(business_id: int, qr_id: int):
     with get_db() as db:
         biz = db.execute(
-            "SELECT * FROM businesses WHERE id = ? AND user_id = ?",
-            (business_id, user["id"]),
+            "SELECT * FROM businesses WHERE id = ?",
+            (business_id,),
         ).fetchone()
         if not biz:
             raise HTTPException(status_code=404, detail="Business not found")

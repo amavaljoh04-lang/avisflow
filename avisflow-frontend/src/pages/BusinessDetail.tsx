@@ -42,6 +42,10 @@ interface QRCode {
   is_active: boolean;
 }
 
+interface QRImageData {
+  [qrId: number]: string;
+}
+
 export default function BusinessDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -53,6 +57,7 @@ export default function BusinessDetail() {
   const [tab, setTab] = useState<"analytics" | "reviews" | "qrcodes" | "settings">("analytics");
   const [qrLabel, setQrLabel] = useState("");
   const [creatingQR, setCreatingQR] = useState(false);
+  const [qrImages, setQrImages] = useState<QRImageData>({});
 
   const fetchAll = async () => {
     try {
@@ -66,6 +71,17 @@ export default function BusinessDetail() {
       setAnalytics(analyticsRes.data);
       setReviews(reviewsRes.data);
       setQrcodes(qrRes.data);
+      // Load QR code images as base64
+      const images: QRImageData = {};
+      for (const qr of qrRes.data) {
+        try {
+          const dataRes = await api.get(`/api/businesses/${id}/qrcodes/${qr.id}/data`);
+          images[qr.id] = dataRes.data.image_base64;
+        } catch {
+          // ignore individual QR image load failures
+        }
+      }
+      setQrImages(images);
     } catch {
       toast.error("Erreur lors du chargement");
       navigate("/dashboard");
@@ -352,12 +368,17 @@ export default function BusinessDetail() {
                         </Badge>
                       </div>
                       <div className="bg-gray-50 rounded-xl p-4 flex items-center justify-center mb-4">
-                        <img
-                          src={`${import.meta.env.VITE_API_URL || ""}/api/businesses/${id}/qrcodes/${qr.id}/image`}
-                          alt={`QR Code - ${qr.label}`}
-                          className="w-48 h-48"
-                          crossOrigin="anonymous"
-                        />
+                        {qrImages[qr.id] ? (
+                          <img
+                            src={qrImages[qr.id]}
+                            alt={`QR Code - ${qr.label}`}
+                            className="w-48 h-48"
+                          />
+                        ) : (
+                          <div className="w-48 h-48 flex items-center justify-center">
+                            <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+                          </div>
+                        )}
                       </div>
                       <div className="flex gap-2">
                         <Button variant="outline" size="sm" className="flex-1" onClick={() => downloadQR(qr.id, qr.label)}>
