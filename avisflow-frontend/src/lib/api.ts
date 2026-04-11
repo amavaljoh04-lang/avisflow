@@ -19,9 +19,17 @@ api.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401) {
-      localStorage.removeItem("avisflow_token");
-      localStorage.removeItem("avisflow_user");
-      window.location.href = "/login";
+      // Don't redirect on auth endpoints — let them handle their own errors
+      const url = err.config?.url || "";
+      const isAuthRoute = url.includes("/api/auth/");
+      if (!isAuthRoute) {
+        localStorage.removeItem("avisflow_token");
+        localStorage.removeItem("avisflow_user");
+        // Use soft navigation instead of hard reload to avoid white flash
+        if (window.location.pathname !== "/login") {
+          window.location.replace("/login");
+        }
+      }
     }
     return Promise.reject(err);
   }

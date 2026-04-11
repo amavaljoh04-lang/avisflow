@@ -12,6 +12,7 @@ import AdminPanel from "@/pages/AdminPanel";
 import BlogList from "@/pages/BlogList";
 import BlogPost from "@/pages/BlogPost";
 import VerifyEmail from "@/pages/VerifyEmail";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 function ProtectedRoute({ children, user }: { children: React.ReactNode; user: any }) {
   if (!user) return <Navigate to="/login" replace />;
@@ -36,6 +37,7 @@ export default function App() {
   }
 
   return (
+    <ErrorBoundary>
     <I18nProvider>
       <BrowserRouter>
         <Toaster
@@ -60,5 +62,6 @@ export default function App() {
         </Routes>
       </BrowserRouter>
     </I18nProvider>
+    </ErrorBoundary>
   );
 }
