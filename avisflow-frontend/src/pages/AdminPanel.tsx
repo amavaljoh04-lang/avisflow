@@ -249,6 +249,17 @@ export default function AdminPanel() {
     }
   };
 
+  const deleteBusiness = async (bizId: number, bizName: string) => {
+    if (!confirm(`Supprimer l'établissement "${bizName}" ? Il sera désactivé.`)) return;
+    try {
+      await api.delete(`/api/admin/businesses/${bizId}`);
+      toast.success("Établissement supprimé");
+      fetchAll();
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail || "Erreur");
+    }
+  };
+
   const saveEmailSettings = async () => {
     setSavingEmail(true);
     try {
@@ -657,6 +668,7 @@ export default function AdminPanel() {
                       <th className="pb-3 font-medium text-gray-500">Avis</th>
                       <th className="pb-3 font-medium text-gray-500">Note</th>
                       <th className="pb-3 font-medium text-gray-500">Créé le</th>
+                      <th className="pb-3 font-medium text-gray-500">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -677,6 +689,11 @@ export default function AdminPanel() {
                           </div>
                         </td>
                         <td className="py-3 text-gray-500 text-xs">{new Date(b.created_at).toLocaleDateString("fr-FR")}</td>
+                        <td className="py-3">
+                          <Button variant="ghost" size="sm" onClick={() => deleteBusiness(b.id, b.name)} title="Supprimer">
+                            <Trash2 className="w-4 h-4 text-red-500" />
+                          </Button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>

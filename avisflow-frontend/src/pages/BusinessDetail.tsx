@@ -174,6 +174,17 @@ export default function BusinessDetail() {
     }
   };
 
+  const handleDeleteBusiness = async () => {
+    if (!confirm(`Supprimer définitivement "${business?.name}" ? Cette action est irréversible.`)) return;
+    try {
+      await api.delete(`/api/businesses/${id}`);
+      toast.success("Établissement supprimé");
+      navigate("/dashboard");
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail || "Erreur lors de la suppression");
+    }
+  };
+
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
       <Star key={i} className={`w-4 h-4 ${i < rating ? "text-yellow-400 fill-yellow-400" : "text-gray-200"}`} />
@@ -491,13 +502,6 @@ export default function BusinessDetail() {
                   <Input id="edit-google-url" value={editGoogleUrl} onChange={(e) => setEditGoogleUrl(e.target.value)} placeholder="https://search.google.com/local/writereview?placeid=..." />
                   <p className="text-xs text-gray-500">Trouvez cette URL en cherchant votre commerce sur Google Maps → cliquez "Écrire un avis" → copiez l'URL</p>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-threshold">Seuil de redirection Google (note minimum)</Label>
-                  <div className="flex items-center gap-4">
-                    <Input id="edit-threshold" type="number" min={1} max={5} value={editThreshold} onChange={(e) => setEditThreshold(Number(e.target.value))} className="w-24" />
-                    <p className="text-sm text-gray-500">Les avis avec une note ≥ {editThreshold} étoile{editThreshold > 1 ? "s" : ""} seront redirigés vers Google</p>
-                  </div>
-                </div>
               </CardContent>
             </Card>
 
@@ -516,7 +520,15 @@ export default function BusinessDetail() {
               </CardContent>
             </Card>
 
-            <div className="flex justify-end gap-3">
+            <div className="flex justify-between items-center">
+              <Button
+                onClick={handleDeleteBusiness}
+                variant="outline"
+                className="border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Supprimer l'établissement
+              </Button>
               <Button
                 onClick={saveBusiness}
                 disabled={saving || !editName.trim()}

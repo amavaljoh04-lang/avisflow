@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Star, Plus, Building2, QrCode, BarChart3, LogOut, Settings, Loader2, ExternalLink } from "lucide-react";
+import { Star, Plus, Building2, QrCode, BarChart3, LogOut, Settings, Loader2, ExternalLink, Trash2 } from "lucide-react";
 import { useI18n, LangSwitcher } from "@/lib/i18n";
 import toast from "react-hot-toast";
 import api from "@/lib/api";
@@ -35,7 +35,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
   const [showCreate, setShowCreate] = useState(false);
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState({
-    name: "", category: "", address: "", phone: "", google_review_url: "", positive_threshold: 4,
+    name: "", category: "", address: "", phone: "", google_review_url: "",
   });
   const navigate = useNavigate();
 
@@ -52,6 +52,18 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
 
   useEffect(() => { fetchBusinesses(); }, []);
 
+  const deleteBusiness = async (bizId: number, bizName: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm(t("dash.delete.confirm").replace("{name}", bizName))) return;
+    try {
+      await api.delete(`/api/businesses/${bizId}`);
+      toast.success(t("dash.deleted"));
+      await fetchBusinesses();
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail || "Erreur");
+    }
+  };
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setCreating(true);
@@ -59,7 +71,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
       await api.post("/api/businesses", form);
       toast.success(t("dash.created"));
       setShowCreate(false);
-      setForm({ name: "", category: "", address: "", phone: "", google_review_url: "", positive_threshold: 4 });
+      setForm({ name: "", category: "", address: "", phone: "", google_review_url: "" });
       await fetchBusinesses();
     } catch (err: any) {
       toast.error(err.response?.data?.detail || t("dash.error.create"));
@@ -137,11 +149,6 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                   <Input placeholder="https://g.page/r/..." value={form.google_review_url} onChange={(e) => setForm({ ...form, google_review_url: e.target.value })} required />
                   <p className="text-xs text-gray-400">Trouvez ce lien dans Google My Business &rarr; Demander des avis</p>
                 </div>
-                <div className="space-y-2">
-                  <Label>{t("dash.threshold")}</Label>
-                  <Input type="number" min={1} max={5} value={form.positive_threshold} onChange={(e) => setForm({ ...form, positive_threshold: parseInt(e.target.value) || 4 })} />
-                  <p className="text-xs text-gray-400">Les notes &ge; ce seuil seront redirigées vers Google</p>
-                </div>
                 <div className="flex items-end">
                   <Button type="submit" className="bg-gradient-to-r from-blue-600 to-indigo-600" disabled={creating}>
                     {creating ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
@@ -176,9 +183,14 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                     <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl flex items-center justify-center">
                       <Building2 className="w-6 h-6 text-blue-600" />
                     </div>
-                    <Badge variant={biz.is_active ? "default" : "secondary"} className={biz.is_active ? "bg-green-100 text-green-700 hover:bg-green-100" : ""}>
-                      {biz.is_active ? t("dash.active") : t("dash.inactive")}
-                    </Badge>
+                      <div className="flex items-center gap-1">
+                        <Badge variant={biz.is_active ? "default" : "secondary"} className={biz.is_active ? "bg-green-100 text-green-700 hover:bg-green-100" : ""}>
+                          {biz.is_active ? t("dash.active") : t("dash.inactive")}
+                        </Badge>
+                        <Button variant="ghost" size="sm" className="text-red-400 hover:text-red-600 hover:bg-red-50 p-1 h-auto" onClick={(e) => deleteBusiness(biz.id, biz.name, e)} title={t("dash.delete")}>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">{biz.name}</h3>
                   {biz.category && <p className="text-sm text-gray-500 mt-1">{biz.category}</p>}

@@ -199,6 +199,19 @@ async def delete_user(user_id: int, admin: dict = Depends(require_admin)):
         return {"message": "Utilisateur et toutes ses donnees supprimes"}
 
 
+# --- Delete Business (Admin) ---
+
+@router.delete("/businesses/{business_id}")
+async def admin_delete_business(business_id: int, admin: dict = Depends(require_admin)):
+    """Admin: soft-delete a business (set is_active = 0)."""
+    with get_db() as db:
+        biz = db.execute("SELECT id FROM businesses WHERE id = ?", (business_id,)).fetchone()
+        if not biz:
+            raise HTTPException(status_code=404, detail="Business not found")
+        db.execute("UPDATE businesses SET is_active = 0 WHERE id = ?", (business_id,))
+        return {"message": "Établissement supprimé"}
+
+
 # --- Email Settings ---
 
 @router.get("/settings/email")

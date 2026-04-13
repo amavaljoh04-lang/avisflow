@@ -25,7 +25,8 @@ async def list_reviews(business_id: int, user: dict = Depends(get_current_user))
 
 @router.post("/api/r/{slug}")
 async def submit_review(slug: str, data: ReviewSubmit):
-    """Public endpoint - customers submit reviews here."""
+    """Public endpoint - customers submit reviews here.
+    No review gating: Google URL is always returned so the customer can choose freely."""
     if data.rating < 1 or data.rating > 5:
         raise HTTPException(status_code=400, detail="Rating must be between 1 and 5")
 
@@ -37,21 +38,16 @@ async def submit_review(slug: str, data: ReviewSubmit):
         if not biz:
             raise HTTPException(status_code=404, detail="Business not found")
 
-        redirected = 1 if data.rating >= biz["positive_threshold"] else 0
-
         db.execute(
             """INSERT INTO reviews (business_id, rating, feedback, customer_name, customer_email, source, redirected_to_google)
             VALUES (?, ?, ?, ?, ?, ?, ?)""",
             (biz["id"], data.rating, data.feedback, data.customer_name,
-             data.customer_email, "qrcode", redirected),
+             data.customer_email, "qrcode", 0),
         )
-
-        google_url = biz["google_review_url"] if redirected and biz["google_review_url"] else None
 
         return {
             "message": "Thank you for your feedback!",
-            "redirect_to_google": bool(redirected),
-            "google_review_url": google_url,
+            "google_review_url": biz["google_review_url"] or None,
             "business_name": biz["name"],
         }
 
