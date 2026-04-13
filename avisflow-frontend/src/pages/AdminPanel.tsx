@@ -10,7 +10,7 @@ import {
   Star, ArrowLeft, Users, Building2, MessageSquare,
   Loader2, Shield, ShieldOff, UserCog, TrendingUp,
   Trash2, Mail, Send, Settings, Save, TestTube, Lock, KeyRound,
-  FileText, Plus, Pencil,
+  FileText, Plus, Pencil, Megaphone, ToggleLeft, ToggleRight,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import toast from "react-hot-toast";
@@ -77,7 +77,7 @@ export default function AdminPanel() {
   const [businesses, setBusinesses] = useState<AdminBusiness[]>([]);
   const [reviews, setReviews] = useState<AdminReview[]>([]);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<"users" | "businesses" | "reviews" | "email" | "security" | "blog">("users");
+  const [tab, setTab] = useState<"users" | "businesses" | "reviews" | "email" | "security" | "blog" | "ads">("users");
 
   // Blog management
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
@@ -85,6 +85,13 @@ export default function AdminPanel() {
   const [editingBlog, setEditingBlog] = useState<BlogPost | null>(null);
   const [blogForm, setBlogForm] = useState({ title: "", content: "", excerpt: "", cover_image_url: "", lang: "fr", is_published: 1 });
   const [savingBlog, setSavingBlog] = useState(false);
+
+  // Ads management
+  const [ads, setAds] = useState<any[]>([]);
+  const [showAdForm, setShowAdForm] = useState(false);
+  const [editingAd, setEditingAd] = useState<any>(null);
+  const [adForm, setAdForm] = useState({ title: "", image_url: "", link_url: "", position: "home_banner", is_active: 0 });
+  const [savingAd, setSavingAd] = useState(false);
 
   // PIN security
   const [pinVerified, setPinVerified] = useState(false);
@@ -159,6 +166,7 @@ export default function AdminPanel() {
         fetchAll();
         fetchEmailSettings();
         fetchBlogPosts();
+        fetchAds();
       }
       setCheckingPin(false);
     }).catch((err) => {
@@ -178,6 +186,7 @@ export default function AdminPanel() {
       fetchAll();
       fetchEmailSettings();
       fetchBlogPosts();
+      fetchAds();
     } catch (err: any) {
       setPinError(err.response?.data?.detail || "PIN incorrect");
     }
@@ -292,6 +301,72 @@ export default function AdminPanel() {
     return Array.from({ length: 5 }, (_, i) => (
       <Star key={i} className={`w-3 h-3 ${i < Math.round(rating) ? "text-yellow-400 fill-yellow-400" : "text-gray-200"}`} />
     ));
+  };
+
+  // Ads CRUD
+  const fetchAds = async () => {
+    try {
+      const res = await api.get("/api/admin/ads");
+      setAds(res.data);
+    } catch { /* ignore */ }
+  };
+
+  const saveAd = async () => {
+    if (!adForm.title.trim()) {
+      toast.error(t("admin.ads.error"));
+      return;
+    }
+    setSavingAd(true);
+    try {
+      if (editingAd) {
+        await api.put(`/api/admin/ads/${editingAd.id}`, adForm);
+        toast.success(t("admin.ads.updated"));
+      } else {
+        await api.post("/api/admin/ads", adForm);
+        toast.success(t("admin.ads.created"));
+      }
+      setShowAdForm(false);
+      setEditingAd(null);
+      setAdForm({ title: "", image_url: "", link_url: "", position: "home_banner", is_active: 0 });
+      fetchAds();
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail || t("admin.ads.error"));
+    } finally {
+      setSavingAd(false);
+    }
+  };
+
+  const deleteAd = async (id: number, title: string) => {
+    if (!confirm(`Supprimer "${title}" ?`)) return;
+    try {
+      await api.delete(`/api/admin/ads/${id}`);
+      toast.success(t("admin.ads.deleted"));
+      fetchAds();
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail || t("admin.ads.error"));
+    }
+  };
+
+  const toggleAdActive = async (ad: any) => {
+    try {
+      await api.put(`/api/admin/ads/${ad.id}`, { is_active: ad.is_active ? 0 : 1 });
+      toast.success(ad.is_active ? t("admin.ads.deactivated") : t("admin.ads.activated"));
+      fetchAds();
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail || t("admin.ads.error"));
+    }
+  };
+
+  const startEditAd = (ad: any) => {
+    setEditingAd(ad);
+    setAdForm({
+      title: ad.title,
+      image_url: ad.image_url || "",
+      link_url: ad.link_url || "",
+      position: ad.position,
+      is_active: ad.is_active,
+    });
+    setShowAdForm(true);
   };
 
   // Blog CRUD
@@ -475,6 +550,7 @@ export default function AdminPanel() {
             { key: "reviews", label: "Avis", icon: MessageSquare },
             { key: "email", label: "Email", icon: Mail },
             { key: "blog", label: "Blog", icon: FileText },
+            { key: "ads", label: t("admin.ads.title"), icon: Megaphone },
             { key: "security", label: "Securite", icon: Lock },
           ].map((t) => (
             <button
@@ -863,6 +939,114 @@ export default function AdminPanel() {
                             <Pencil className="w-4 h-4" />
                           </Button>
                           <Button variant="ghost" size="sm" onClick={() => deleteBlogPost(post.id, post.title)}>
+                            <Trash2 className="w-4 h-4 text-red-500" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Ads Tab */}
+        {tab === "ads" && (
+          <div className="space-y-6">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Megaphone className="w-5 h-5 text-blue-600" /> {t("admin.ads.title")} ({ads.length})
+                </CardTitle>
+                <Button size="sm" onClick={() => { setEditingAd(null); setAdForm({ title: "", image_url: "", link_url: "", position: "home_banner", is_active: 0 }); setShowAdForm(!showAdForm); }}>
+                  <Plus className="w-4 h-4 mr-1" /> {t("admin.ads.new")}
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {showAdForm && (
+                  <div className="mb-6 p-4 bg-gray-50 rounded-xl border space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>{t("admin.ads.form.title")}</Label>
+                        <Input value={adForm.title} onChange={(e) => setAdForm({ ...adForm, title: e.target.value })} placeholder="Titre de la publicite" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>{t("admin.ads.form.position")}</Label>
+                        <select
+                          value={adForm.position}
+                          onChange={(e) => setAdForm({ ...adForm, position: e.target.value })}
+                          className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm"
+                        >
+                          <option value="home_banner">{t("admin.ads.positions.home_banner")}</option>
+                          <option value="home_middle">{t("admin.ads.positions.home_middle")}</option>
+                          <option value="home_bottom">{t("admin.ads.positions.home_bottom")}</option>
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>{t("admin.ads.form.image")}</Label>
+                        <Input value={adForm.image_url} onChange={(e) => setAdForm({ ...adForm, image_url: e.target.value })} placeholder="https://..." />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>{t("admin.ads.form.link")}</Label>
+                        <Input value={adForm.link_url} onChange={(e) => setAdForm({ ...adForm, link_url: e.target.value })} placeholder="https://..." />
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <label className="flex items-center gap-2 text-sm">
+                        <input type="checkbox" checked={adForm.is_active === 1} onChange={(e) => setAdForm({ ...adForm, is_active: e.target.checked ? 1 : 0 })} className="rounded" />
+                        {t("admin.ads.form.active")}
+                      </label>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button onClick={saveAd} disabled={savingAd} className="bg-gradient-to-r from-blue-600 to-indigo-600">
+                        {savingAd ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
+                        {editingAd ? t("admin.blog.save") : t("admin.ads.new")}
+                      </Button>
+                      <Button variant="outline" onClick={() => { setShowAdForm(false); setEditingAd(null); }}>
+                        {t("admin.blog.cancel")}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {ads.length === 0 && !showAdForm ? (
+                  <div className="text-center py-12">
+                    <Megaphone className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                    <p className="text-gray-500 font-medium">{t("admin.ads.empty")}</p>
+                    <p className="text-sm text-gray-400 mt-1">{t("admin.ads.empty.desc")}</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {ads.map((ad) => (
+                      <div key={ad.id} className="flex items-center gap-4 p-4 bg-white border rounded-xl hover:border-blue-200 transition">
+                        {ad.image_url ? (
+                          <img src={ad.image_url} alt={ad.title} className="w-16 h-16 object-cover rounded-lg border" />
+                        ) : (
+                          <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center">
+                            <Megaphone className="w-6 h-6 text-gray-400" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-gray-900 truncate">{ad.title}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge className={ad.is_active ? "bg-green-100 text-green-700 hover:bg-green-100" : "bg-gray-100 text-gray-500 hover:bg-gray-100"}>
+                              {ad.is_active ? "Active" : "Inactive"}
+                            </Badge>
+                            <span className="text-xs text-gray-400">
+                              {ad.position === "home_banner" ? t("admin.ads.positions.home_banner") : ad.position === "home_middle" ? t("admin.ads.positions.home_middle") : t("admin.ads.positions.home_bottom")}
+                            </span>
+                          </div>
+                          {ad.link_url && <p className="text-xs text-blue-500 truncate mt-1">{ad.link_url}</p>}
+                        </div>
+                        <div className="flex gap-1 shrink-0">
+                          <Button variant="ghost" size="sm" onClick={() => toggleAdActive(ad)} title={ad.is_active ? "Desactiver" : "Activer"}>
+                            {ad.is_active ? <ToggleRight className="w-5 h-5 text-green-500" /> : <ToggleLeft className="w-5 h-5 text-gray-400" />}
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => startEditAd(ad)}>
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => deleteAd(ad.id, ad.title)}>
                             <Trash2 className="w-4 h-4 text-red-500" />
                           </Button>
                         </div>

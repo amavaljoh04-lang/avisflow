@@ -107,6 +107,17 @@ Sitemap: {BASE_URL}/sitemap.xml
     return Response(content=content, media_type="text/plain")
 
 
+@app.get("/api/public/ads")
+async def public_ads():
+    """Public active ads for landing page - no auth required."""
+    from app.database import get_db
+    with get_db() as db:
+        rows = db.execute(
+            "SELECT id, title, image_url, link_url, position FROM ads WHERE is_active = 1 ORDER BY created_at DESC"
+        ).fetchall()
+        return [dict(r) for r in rows]
+
+
 @app.get("/api/public/stats")
 async def public_stats():
     """Public stats for landing page - no auth required."""

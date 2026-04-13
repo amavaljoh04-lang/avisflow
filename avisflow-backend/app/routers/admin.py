@@ -27,6 +27,22 @@ class PromoEmail(BaseModel):
     target: str = "all"  # "all" or "active"
 
 
+class AdCreate(BaseModel):
+    title: str
+    image_url: Optional[str] = ""
+    link_url: Optional[str] = ""
+    position: str = "home_banner"
+    is_active: int = 0
+
+
+class AdUpdate(BaseModel):
+    title: Optional[str] = None
+    image_url: Optional[str] = None
+    link_url: Optional[str] = None
+    position: Optional[str] = None
+    is_active: Optional[int] = None
+
+
 class AdminPinCheck(BaseModel):
     pin: str
 
@@ -288,3 +304,57 @@ def _send_email(settings: dict, to_email: str, subject: str, body: str):
         server.starttls()
         server.login(settings["smtp_user"], settings["smtp_password"])
         server.send_message(msg)
+
+
+# --- Ads Management ---
+
+@router.get("/ads")
+async def list_ads(admin: dict = Depends(require_admin)):
+    """List all ads."""
+    with get_db() as db:
+        rows = db.execute("SELECT * FROM ads ORDER BY created_at DESC").fetchall()
+        return [dict(r) for r in rows]
+
+
+@router.post("/ads")
+async def create_ad(data: AdCreate, admin: dict = Depends(require_admin)):
+    """Create a new ad."""
+    with get_db() as db:
+        db.execute(
+            """INSERT INTO ads (title, image_url, link_url, position, is_active)
+            VALUES (?, ?, ?, ?, ?)""",
+            (data.title, data.image_url, data.link_url, data.position, data.is_active),
+        )
+        return {"message": "Publicite creee"}
+
+
+@router.put("/ads/{ad_id}")
+async def update_ad(ad_id: int, data: AdUpdate, admin: dict = Depends(require_admin)):
+    """Update an ad."""
+    with get_db() as db:
+        ad = db.execute("SELECT * FROM ads WHERE id = ?", (ad_id,)).fetchone()
+        if not ad:
+            raise HTTPException(status_code=404, detail="Publicite introuvable")
+        updates = []
+        values = []
+        for field in ["title", "image_url", "link_url", "position", "is_active"]:
+            val = getattr(data, field)
+            if val is not None:
+                updates.append(f"{field} = ?")
+                values.append(val)
+        if updates:
+            updates.append("updated_at = CURRENT_TIMESTAMP")
+            values.append(ad_id)
+            db.execute(f"UPDATE ads SET {', '.join(updates)} WHERE id = ?", values)
+        return {"message": "Publicite mise a jour"}
+
+
+@router.delete("/ads/{ad_id}")
+async def delete_ad(ad_id: int, admin: dict = Depends(require_admin)):
+    """Delete an ad."""
+    with get_db() as db:
+        ad = db.execute("SELECT id FROM ads WHERE id = ?", (ad_id,)).fetchone()
+        if not ad:
+            raise HTTPException(status_code=404, detail="Publicite introuvable")
+        db.execute("DELETE FROM ads WHERE id = ?", (ad_id,))
+        return {"message": "Publicite supprimee"}

@@ -107,6 +107,19 @@ def init_db():
             FOREIGN KEY (author_id) REFERENCES users(id)
         );
 
+        CREATE TABLE IF NOT EXISTS ads (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            image_url TEXT,
+            link_url TEXT,
+            position TEXT NOT NULL DEFAULT 'home_banner',
+            is_active INTEGER DEFAULT 0,
+            click_count INTEGER DEFAULT 0,
+            view_count INTEGER DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
         CREATE INDEX IF NOT EXISTS idx_blog_slug ON blog_posts(slug);
         CREATE INDEX IF NOT EXISTS idx_blog_lang ON blog_posts(lang);
         CREATE INDEX IF NOT EXISTS idx_reviews_business ON reviews(business_id);

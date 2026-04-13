@@ -19,6 +19,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "hero.title2": "avis 5 etoiles",
     "hero.subtitle": "AvisFlow collecte automatiquement les avis positifs sur Google et garde les retours negatifs prives. Un simple QR code suffit.",
     "hero.cta": "Creer mon compte gratuit",
+    "hero.generate_qr": "Generer mon QR code gratuit",
     "hero.demo": "Voir la demo",
     "hero.nocard": "Aucune carte requise",
     "hero.quick": "Installation en 2 min",
@@ -70,6 +71,27 @@ const translations: Record<Lang, Record<string, string>> = {
     "pricing.f6": "Feedback prive",
     "pricing.f7": "Support par email",
     "pricing.cta": "Commencer maintenant",
+
+    // Visual Demo
+    "demo.title": "Voyez comment ca fonctionne",
+    "demo.subtitle": "Un parcours simple pour vos clients, des resultats concrets pour vous",
+    "demo.step1": "Le client scanne",
+    "demo.step1_desc": "Placez le QR code sur vos tables ou comptoir",
+    "demo.phone_title": "Comment etait votre experience ?",
+    "demo.phone_desc": "Le client note en un clic",
+    "demo.google_review": "Avis Google publie",
+    "demo.step3": "L'avis va sur Google",
+    "demo.step3_desc": "Les clients satisfaits laissent un avis 5 etoiles",
+
+    // Business types
+    "types.title": "Pour tous les types de commerces",
+    "types.subtitle": "AvisFlow s'adapte a votre activite",
+    "types.restaurant": "Restaurant",
+    "types.salon": "Salon de coiffure",
+    "types.garage": "Garage auto",
+    "types.shop": "Boutique",
+    "types.health": "Sante",
+    "types.hotel": "Hotel",
 
     // CTA
     "cta.title": "Pret a booster vos avis Google ?",
@@ -189,6 +211,26 @@ const translations: Record<Lang, Record<string, string>> = {
     "admin.blog.updated": "Article mis a jour !",
     "admin.blog.deleted": "Article supprime !",
     "admin.blog.error": "Erreur",
+
+    // Admin Ads
+    "admin.ads.title": "Publicites",
+    "admin.ads.new": "Nouvelle publicite",
+    "admin.ads.form.title": "Titre",
+    "admin.ads.form.image": "URL de l'image",
+    "admin.ads.form.link": "URL du lien",
+    "admin.ads.form.position": "Emplacement",
+    "admin.ads.form.active": "Active",
+    "admin.ads.positions.home_banner": "Banniere accueil (haut)",
+    "admin.ads.positions.home_middle": "Accueil (milieu)",
+    "admin.ads.positions.home_bottom": "Accueil (bas)",
+    "admin.ads.created": "Publicite creee !",
+    "admin.ads.updated": "Publicite mise a jour !",
+    "admin.ads.deleted": "Publicite supprimee !",
+    "admin.ads.empty": "Aucune publicite",
+    "admin.ads.empty.desc": "Ajoutez des publicites pour generer des revenus",
+    "admin.ads.error": "Erreur",
+    "admin.ads.activated": "Publicite activee",
+    "admin.ads.deactivated": "Publicite desactivee",
   },
   en: {
     // Nav
@@ -206,6 +248,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "hero.title2": "5-star reviews",
     "hero.subtitle": "AvisFlow automatically collects positive reviews on Google and keeps negative feedback private. A simple QR code is all you need.",
     "hero.cta": "Create my free account",
+    "hero.generate_qr": "Generate my free QR code",
     "hero.demo": "See the demo",
     "hero.nocard": "No credit card required",
     "hero.quick": "Setup in 2 min",
@@ -257,6 +300,27 @@ const translations: Record<Lang, Record<string, string>> = {
     "pricing.f6": "Private feedback",
     "pricing.f7": "Email support",
     "pricing.cta": "Start now",
+
+    // Visual Demo
+    "demo.title": "See how it works",
+    "demo.subtitle": "A simple journey for your customers, real results for you",
+    "demo.step1": "Customer scans",
+    "demo.step1_desc": "Place the QR code on your tables or counter",
+    "demo.phone_title": "How was your experience?",
+    "demo.phone_desc": "Customer rates in one click",
+    "demo.google_review": "Google review posted",
+    "demo.step3": "Review goes to Google",
+    "demo.step3_desc": "Satisfied customers leave a 5-star review",
+
+    // Business types
+    "types.title": "For all types of businesses",
+    "types.subtitle": "AvisFlow adapts to your business",
+    "types.restaurant": "Restaurant",
+    "types.salon": "Hair salon",
+    "types.garage": "Auto shop",
+    "types.shop": "Retail store",
+    "types.health": "Healthcare",
+    "types.hotel": "Hotel",
 
     // CTA
     "cta.title": "Ready to boost your Google reviews?",
@@ -376,6 +440,26 @@ const translations: Record<Lang, Record<string, string>> = {
     "admin.blog.updated": "Article updated!",
     "admin.blog.deleted": "Article deleted!",
     "admin.blog.error": "Error",
+
+    // Admin Ads
+    "admin.ads.title": "Ads",
+    "admin.ads.new": "New ad",
+    "admin.ads.form.title": "Title",
+    "admin.ads.form.image": "Image URL",
+    "admin.ads.form.link": "Link URL",
+    "admin.ads.form.position": "Position",
+    "admin.ads.form.active": "Active",
+    "admin.ads.positions.home_banner": "Homepage banner (top)",
+    "admin.ads.positions.home_middle": "Homepage (middle)",
+    "admin.ads.positions.home_bottom": "Homepage (bottom)",
+    "admin.ads.created": "Ad created!",
+    "admin.ads.updated": "Ad updated!",
+    "admin.ads.deleted": "Ad deleted!",
+    "admin.ads.empty": "No ads",
+    "admin.ads.empty.desc": "Add ads to generate revenue",
+    "admin.ads.error": "Error",
+    "admin.ads.activated": "Ad activated",
+    "admin.ads.deactivated": "Ad deactivated",
   },
 };
 
