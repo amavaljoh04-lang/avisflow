@@ -38,7 +38,7 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-white">
-      <SEO title={undefined} description="AvisFlow aide les commerces locaux a collecter plus d'avis Google positifs grace aux QR codes. Gratuit, simple et efficace." />
+      <SEO title={undefined} description="AvisFlow aide les commerces locaux \u00e0 collecter plus d'avis Google positifs gr\u00e2ce aux QR codes. Gratuit, simple et efficace." />
       {/* Nav */}
       <nav className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
@@ -136,11 +136,7 @@ export default function Landing() {
           <div className="grid md:grid-cols-3 gap-8 items-center">
             <div className="text-center">
               <div className="w-48 h-48 mx-auto bg-white border-2 border-gray-200 rounded-2xl p-4 shadow-lg flex items-center justify-center relative">
-                <div className="grid grid-cols-5 gap-1">
-                  {Array.from({ length: 25 }, (_, i) => (
-                    <div key={i} className={`w-6 h-6 rounded-sm ${[0,1,2,4,5,6,10,12,14,18,20,21,22,24].includes(i) ? "bg-gray-900" : "bg-white border border-gray-100"}`} />
-                  ))}
-                </div>
+                <img src="/demo-qr.png" alt="QR Code AvisFlow" className="w-36 h-36 object-contain" />
                 <div className="absolute -bottom-3 bg-blue-600 text-white text-xs font-medium px-3 py-1 rounded-full">QR Code</div>
               </div>
               <p className="mt-6 font-semibold text-gray-900">{t("demo.step1")}</p>
@@ -178,8 +174,8 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Stats — only show if meaningful data exists (hide when numbers are too low) */}
-      {stats && (stats.total_users >= 5 || stats.total_reviews >= 5) && (
+      {/* Stats — only show if meaningful data exists (hide until >= 50 businesses) */}
+      {stats && stats.total_businesses >= 50 && (
         <section className="py-16 bg-gray-900 text-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-2 md:grid-cols-5 gap-8 text-center">

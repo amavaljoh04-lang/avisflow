@@ -11,15 +11,16 @@ const translations: Record<Lang, Record<string, string>> = {
     "nav.blog": "Blog",
     "nav.login": "Connexion",
     "nav.signup": "Commencer gratuitement",
-    "nav.admin": "Admin",
+    "nav.admin": "Administration",
 
     // Hero
     "hero.badge": "100% Gratuit \u2014 Boostez vos avis Google d\u00e8s maintenant",
-    "hero.title1": "Multipliez vos avis Google ",
-    "hero.title2": "5 \u00e9toiles sans effort",
-    "hero.subtitle": "Un simple QR code. Les bons avis vont sur Google. Les autres restent priv\u00e9s. Gratuit pour toujours.",
+    "hero.title1": "Collectez et g\u00e9rez vos avis Google ",
+    "hero.title2": "automatiquement",
+    "hero.subtitle": "Un simple QR code. Les avis 4-5 \u00e9toiles vont directement sur Google. Les notes 1-3 restent priv\u00e9es. 100% gratuit \u2014 Sans carte bancaire \u2014 En 2 minutes.",
     "hero.cta": "Cr\u00e9er mon compte gratuit",
     "hero.generate_qr": "G\u00e9n\u00e9rer mon QR code gratuit",
+    "hero.generate_qr_short": "G\u00e9n\u00e9rer mon QR code",
     "hero.demo": "Voir la d\u00e9mo",
     "hero.nocard": "Aucune carte requise",
     "hero.quick": "Installation en 2 min",
@@ -36,11 +37,11 @@ const translations: Record<Lang, Record<string, string>> = {
     "how.title": "Comment \u00e7a marche ?",
     "how.subtitle": "3 \u00e9tapes simples pour booster votre r\u00e9putation",
     "how.step1.title": "Affichez votre QR code",
-    "how.step1.desc": "Imprimez le QR code et placez-le sur vos tables, comptoir ou vitrine. Vos clients le scannent avec leur t\u00e9l\u00e9phone.",
-    "how.step2.title": "Vos clients notent en 5 secondes",
-    "how.step2.desc": "Une page s'ouvre. Le client choisit de 1 \u00e0 5 \u00e9toiles. Simple, rapide, sans application \u00e0 t\u00e9l\u00e9charger.",
-    "how.step3.title": "Les notes 4-5\u2605 vont sur Google automatiquement",
-    "how.step3.desc": "Les clients satisfaits sont redirig\u00e9s vers Google. Les avis 1-3 \u00e9toiles restent priv\u00e9s pour vous. Votre note Google monte naturellement.",
+    "how.step1.desc": "Imprimez le QR code et placez-le sur vos tables, votre comptoir ou votre vitrine. Vos clients le scannent avec leur t\u00e9l\u00e9phone.",
+    "how.step2.title": "Le client note en 5 secondes",
+    "how.step2.desc": "Une page s\u2019ouvre. Le client choisit de 1 \u00e0 5 \u00e9toiles. Simple, rapide, sans application \u00e0 t\u00e9l\u00e9charger.",
+    "how.step3.title": "Les avis 4-5\u2605 vont sur Google automatiquement",
+    "how.step3.desc": "Les clients satisfaits sont redirig\u00e9s vers Google pour laisser un avis. Les notes 1-3 \u00e9toiles restent priv\u00e9es pour vous. Votre r\u00e9putation monte naturellement.",
 
     // Features
     "features.title": "Tout ce dont vous avez besoin",
@@ -81,7 +82,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "demo.phone_desc": "Le client note en un clic",
     "demo.google_review": "Avis Google publi\u00e9",
     "demo.step3": "L'avis va sur Google",
-    "demo.step3_desc": "Les clients satisfaits laissent un avis 5 \u00e9toiles",
+    "demo.step3_desc": "Les clients satisfaits laissent un avis 5\u2605 sur Google",
 
     // Business types
     "types.title": "Pour tous les types de commerces",
@@ -95,7 +96,7 @@ const translations: Record<Lang, Record<string, string>> = {
 
     // CTA
     "cta.title": "Pr\u00eat \u00e0 booster vos avis Google ?",
-    "cta.subtitle": "Rejoignez les commerces qui utilisent AvisFlow pour am\u00e9liorer leur r\u00e9putation en ligne.",
+    "cta.subtitle": "Rejoignez les commerces qui utilisent d\u00e9j\u00e0 AvisFlow pour am\u00e9liorer leur r\u00e9putation en ligne.",
     "cta.button": "Cr\u00e9er mon compte gratuit",
 
     // Footer
@@ -166,7 +167,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "review.error": "Erreur, veuillez r\u00e9essayer",
     "review.thanks": "Merci pour votre retour !",
     "review.recorded": "Votre avis a bien \u00e9t\u00e9 enregistr\u00e9.",
-    "review.improves": "prend en compte tous les retours pour s'am\u00e9liorer.",
+    "review.improves": "prend en compte tous les retours pour s\u2019am\u00e9liorer.",
     "review.not_found": "\u00c9tablissement introuvable",
     "review.feedback": "Dites-nous comment nous am\u00e9liorer",
     "review.comment": "Votre commentaire...",
@@ -480,8 +481,8 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     const saved = localStorage.getItem("avisflow_lang");
     if (saved === "en" || saved === "fr") return saved;
     // Auto-detect browser language
-    const browserLang = navigator.language.slice(0, 2);
-    return browserLang === "en" ? "en" : "fr";
+    // Default to French — target audience is France/Belgium/Switzerland/Quebec
+    return "fr";
   });
 
   const setLang = (newLang: Lang) => {
@@ -510,7 +511,7 @@ export function LangSwitcher() {
     <button
       onClick={() => setLang(lang === "fr" ? "en" : "fr")}
       className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 transition text-sm font-medium text-gray-700"
-      title={lang === "fr" ? "Switch to English" : "Passer en francais"}
+      title={lang === "fr" ? "Switch to English" : "Passer en fran\u00e7ais"}
     >
       <span className="text-base">{lang === "fr" ? "\uD83C\uDDEC\uD83C\uDDE7" : "\uD83C\uDDEB\uD83C\uDDF7"}</span>
       <span>{lang === "fr" ? "EN" : "FR"}</span>
