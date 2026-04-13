@@ -71,7 +71,7 @@ export default function Landing() {
                 <span>{t("hero.badge")}</span>
               </div>
               <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-extrabold text-gray-900 tracking-tight leading-[1.1]">
-                {t("hero.title1")}
+                {t("hero.title1")}<br />
                 <span className="text-blue-600">{t("hero.title2")}</span>
               </h1>
               <p className="mt-6 text-lg text-gray-600 leading-relaxed max-w-lg mx-auto lg:mx-0">
@@ -80,7 +80,7 @@ export default function Landing() {
               <div className="mt-8 flex flex-col sm:flex-row items-center lg:items-start gap-3">
                 <Link to="/register">
                   <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-base font-semibold px-8 py-6 shadow-lg shadow-blue-600/25 hover:shadow-blue-600/35 transition-all duration-200">
-                    {t("hero.generate_qr")} <ArrowRight className="w-4 h-4 ml-2" />
+                    {t("hero.generate_qr")}
                   </Button>
                 </Link>
                 <a href="#how">

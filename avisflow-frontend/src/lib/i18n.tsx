@@ -15,11 +15,11 @@ const translations: Record<Lang, Record<string, string>> = {
 
     // Hero
     "hero.badge": "+35% de clients en plus pour nos utilisateurs",
-    "hero.title1": "Attirez plus de clients ",
-    "hero.title2": "gr\u00e2ce \u00e0 vos avis Google",
-    "hero.subtitle": "Vos clients satisfaits partent sans laisser d'avis. Avec AvisFlow, un QR code au comptoir transforme chaque visite en avis Google 5\u2b50. R\u00e9sultat : vous montez dans le classement et attirez de nouveaux clients.",
+    "hero.title1": "+30 avis Google en 30 jours. ",
+    "hero.title2": "Plus de clients, sans effort.",
+    "hero.subtitle": "Un QR code au comptoir. Votre client le scanne, laisse un avis Google en 30 secondes. Vous montez dans le classement, vous attirez de nouveaux clients. C'est aussi simple que \u00e7a.",
     "hero.cta": "Cr\u00e9er mon compte gratuit",
-    "hero.generate_qr": "Tester gratuitement maintenant",
+    "hero.generate_qr": "Obtenir mes premiers avis \u2192",
     "hero.generate_qr_short": "G\u00e9n\u00e9rer mon QR code",
     "hero.demo": "Voir comment \u00e7a marche",
     "hero.nocard": "Gratuit \u00e0 vie",
@@ -43,7 +43,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "urgency.line1": "Vos concurrents collectent des avis Google",
     "urgency.line2": "Chaque avis perdu = un client en moins",
     "urgency.line3": "Les commerces avec +50 avis ont 3x plus de clics",
-    "urgency.cta": "Ne perdez plus un seul avis",
+    "urgency.cta": "Commencer maintenant \u2014 c'est gratuit",
 
     // Stats
     "stats.users": "Utilisateurs inscrits",
@@ -80,7 +80,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "results.visibility_after": "Top 3",
     "results.visibility_label": "Position Google Maps",
     "results.disclaimer": "Exemple bas\u00e9 sur les r\u00e9sultats observ\u00e9s chez nos premiers utilisateurs",
-    "results.cta": "Je veux les m\u00eames r\u00e9sultats",
+    "results.cta": "Obtenir les m\u00eames r\u00e9sultats \u2192",
 
     // Features
     "features.title": "Pourquoi les pros choisissent AvisFlow",
@@ -293,11 +293,11 @@ const translations: Record<Lang, Record<string, string>> = {
 
     // Hero
     "hero.badge": "100% Free — Boost your Google reviews now",
-    "hero.title1": "Attract more customers ",
-    "hero.title2": "with your Google reviews",
-    "hero.subtitle": "Your happy customers leave without reviewing. With AvisFlow, a QR code at the counter turns every visit into a 5\u2b50 Google review. Result: you climb the rankings and attract new customers.",
+    "hero.title1": "+30 Google reviews in 30 days. ",
+    "hero.title2": "More customers, effortlessly.",
+    "hero.subtitle": "A QR code at the counter. Your customer scans it, leaves a Google review in 30 seconds. You climb the rankings, you attract new customers. It's that simple.",
     "hero.cta": "Create my free account",
-    "hero.generate_qr": "Try free now",
+    "hero.generate_qr": "Get my first reviews \u2192",
     "hero.demo": "See how it works",
     "hero.nocard": "Free forever",
     "hero.quick": "Ready in 2 minutes",
@@ -320,7 +320,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "urgency.line1": "Your competitors are collecting Google reviews",
     "urgency.line2": "Every lost review = one less customer",
     "urgency.line3": "Businesses with 50+ reviews get 3x more clicks",
-    "urgency.cta": "Don't lose another review",
+    "urgency.cta": "Start now \u2014 it's free",
 
     // Stats
     "stats.users": "Registered users",
@@ -357,7 +357,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "results.visibility_after": "Top 3",
     "results.visibility_label": "Google Maps Position",
     "results.disclaimer": "Example based on results observed with our first users",
-    "results.cta": "I want the same results",
+    "results.cta": "Get the same results \u2192",
 
     // Features
     "features.title": "Why pros choose AvisFlow",
