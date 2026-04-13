@@ -58,7 +58,8 @@ async def submit_review(slug: str, data: ReviewSubmit):
 
 @router.get("/api/r/{slug}/info")
 async def get_business_public_info(slug: str):
-    """Public endpoint - get business info for the review page."""
+    """Public endpoint - get business info for the review page.
+    Also increments scan_count on the business's QR codes."""
     with get_db() as db:
         biz = db.execute(
             "SELECT id, name, slug, category, primary_color, logo_url, positive_threshold FROM businesses WHERE slug = ? AND is_active = 1",
@@ -66,6 +67,12 @@ async def get_business_public_info(slug: str):
         ).fetchone()
         if not biz:
             raise HTTPException(status_code=404, detail="Business not found")
+
+        # Increment scan count on all active QR codes for this business
+        db.execute(
+            "UPDATE qr_codes SET scan_count = scan_count + 1 WHERE business_id = ? AND is_active = 1",
+            (biz["id"],),
+        )
 
         return {
             "name": biz["name"],
