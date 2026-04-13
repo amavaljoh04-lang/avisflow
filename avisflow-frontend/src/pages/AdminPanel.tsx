@@ -11,6 +11,7 @@ import {
   Loader2, Shield, ShieldOff, UserCog, TrendingUp,
   Trash2, Mail, Send, Settings, Save, TestTube, Lock, KeyRound,
   FileText, Plus, Pencil, Megaphone, ToggleLeft, ToggleRight,
+  Download, Upload, Database, AlertTriangle,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import toast from "react-hot-toast";
@@ -77,7 +78,12 @@ export default function AdminPanel() {
   const [businesses, setBusinesses] = useState<AdminBusiness[]>([]);
   const [reviews, setReviews] = useState<AdminReview[]>([]);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<"users" | "businesses" | "reviews" | "email" | "security" | "blog" | "ads">("users");
+  const [tab, setTab] = useState<"users" | "businesses" | "reviews" | "email" | "security" | "blog" | "ads" | "migration">("users");
+
+  // Migration
+  const [exporting, setExporting] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState<{message: string; imported?: Record<string, number>} | null>(null);
 
   // Blog management
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
@@ -551,6 +557,7 @@ export default function AdminPanel() {
             { key: "email", label: "Email", icon: Mail },
             { key: "blog", label: "Blog", icon: FileText },
             { key: "ads", label: t("admin.ads.title"), icon: Megaphone },
+            { key: "migration", label: "Migration", icon: Database },
             { key: "security", label: "Securite", icon: Lock },
           ].map((t) => (
             <button
@@ -1054,6 +1061,143 @@ export default function AdminPanel() {
                     ))}
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Migration Tab */}
+        {tab === "migration" && (
+          <div className="space-y-6">
+            {/* Export */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Download className="w-5 h-5 text-blue-600" /> Exporter les donn\u00e9es
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-gray-600">
+                  T\u00e9l\u00e9chargez toutes les donn\u00e9es de la plateforme (utilisateurs, \u00e9tablissements, avis, QR codes, blog, publicit\u00e9s, param\u00e8tres) dans un fichier JSON.
+                  Les mots de passe sont export\u00e9s hach\u00e9s : les utilisateurs n'auront pas besoin de recr\u00e9er leur compte.
+                  Les QR codes d\u00e9j\u00e0 imprim\u00e9s continueront de fonctionner car les slugs sont pr\u00e9serv\u00e9s.
+                </p>
+                <Button
+                  onClick={async () => {
+                    setExporting(true);
+                    try {
+                      const res = await api.get("/api/admin/export");
+                      const blob = new Blob([JSON.stringify(res.data, null, 2)], { type: "application/json" });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement("a");
+                      a.href = url;
+                      a.download = `avisflow-export-${new Date().toISOString().slice(0, 10)}.json`;
+                      a.click();
+                      URL.revokeObjectURL(url);
+                      toast.success("Export t\u00e9l\u00e9charg\u00e9 !");
+                    } catch (err: any) {
+                      toast.error(err.response?.data?.detail || "Erreur lors de l'export");
+                    } finally {
+                      setExporting(false);
+                    }
+                  }}
+                  disabled={exporting}
+                  className="bg-gradient-to-r from-blue-600 to-indigo-600"
+                >
+                  {exporting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Download className="w-4 h-4 mr-2" />}
+                  T\u00e9l\u00e9charger l'export JSON
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Import */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Upload className="w-5 h-5 text-indigo-600" /> Importer les donn\u00e9es
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3">
+                  <AlertTriangle className="w-5 h-5 text-yellow-600 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-yellow-800">Attention : cette op\u00e9ration remplace toutes les donn\u00e9es existantes.</p>
+                    <p className="text-sm text-yellow-600 mt-1">Utilisez cette fonction uniquement pour migrer vers un nouveau serveur. Faites un export avant d'importer.</p>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Fichier d'export JSON</Label>
+                  <input
+                    type="file"
+                    accept=".json"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      if (!confirm("\u26a0\ufe0f ATTENTION : Cela va REMPLACER toutes les donn\u00e9es actuelles par celles du fichier. Continuer ?")) {
+                        e.target.value = "";
+                        return;
+                      }
+                      setImporting(true);
+                      setImportResult(null);
+                      try {
+                        const formData = new FormData();
+                        formData.append("file", file);
+                        const res = await api.post("/api/admin/import", formData, {
+                          headers: { "Content-Type": "multipart/form-data" },
+                        });
+                        setImportResult(res.data);
+                        toast.success("Import termin\u00e9 !");
+                        fetchAll();
+                      } catch (err: any) {
+                        toast.error(err.response?.data?.detail || "Erreur lors de l'import");
+                      } finally {
+                        setImporting(false);
+                        e.target.value = "";
+                      }
+                    }}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm cursor-pointer"
+                    disabled={importing}
+                  />
+                  {importing && (
+                    <div className="flex items-center gap-2 text-sm text-blue-600">
+                      <Loader2 className="w-4 h-4 animate-spin" /> Import en cours...
+                    </div>
+                  )}
+                </div>
+                {importResult && (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4 space-y-2">
+                    <p className="text-sm font-medium text-green-800">{importResult.message}</p>
+                    {importResult.imported && (
+                      <div className="grid grid-cols-3 gap-2 text-sm text-green-700">
+                        <span>\ud83d\udc64 {importResult.imported.users} utilisateurs</span>
+                        <span>\ud83c\udfe2 {importResult.imported.businesses} \u00e9tablissements</span>
+                        <span>\u2b50 {importResult.imported.reviews} avis</span>
+                        <span>\ud83d\udcf1 {importResult.imported.qr_codes} QR codes</span>
+                        <span>\ud83d\udcdd {importResult.imported.blog_posts} articles</span>
+                        <span>\ud83d\udce2 {importResult.imported.ads} publicit\u00e9s</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* CLI Instructions */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Database className="w-5 h-5 text-gray-600" /> Migration par ligne de commande
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <p className="text-sm text-gray-600">Vous pouvez aussi migrer via la ligne de commande depuis votre serveur :</p>
+                <div className="bg-gray-900 text-green-400 rounded-lg p-4 text-sm font-mono space-y-2">
+                  <p className="text-gray-500"># Sur l'ancien serveur : exporter</p>
+                  <p>curl -H "Authorization: Bearer $TOKEN" https://avisflow.online/api/admin/export &gt; backup.json</p>
+                  <p className="text-gray-500 mt-3"># Sur le nouveau serveur : importer</p>
+                  <p>curl -X POST -H "Authorization: Bearer $TOKEN" -F "file=@backup.json" https://nouveau-serveur/api/admin/import</p>
+                </div>
+                <p className="text-xs text-gray-500">Remplacez $TOKEN par votre token JWT (visible dans le localStorage du navigateur sous la cl\u00e9 \"token\").</p>
               </CardContent>
             </Card>
           </div>
