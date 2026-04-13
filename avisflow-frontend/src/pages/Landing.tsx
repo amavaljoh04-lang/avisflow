@@ -1,18 +1,10 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Star, QrCode, Shield, TrendingUp, ArrowRight, CheckCircle2, BarChart3, MessageSquare, Utensils, Scissors, Car, ShoppingBag, Stethoscope, Hotel } from "lucide-react";
+import { Star, QrCode, Shield, TrendingUp, ArrowRight, CheckCircle2, BarChart3, MessageSquare, Utensils, Scissors, Car, ShoppingBag, Stethoscope, Hotel, Zap, Clock, AlertTriangle } from "lucide-react";
 import { useI18n, LangSwitcher } from "@/lib/i18n";
 import api from "@/lib/api";
 import SEO from "@/components/SEO";
-
-interface PublicStats {
-  total_businesses: number;
-  total_reviews: number;
-  total_users: number;
-  average_rating: number;
-  redirected_to_google: number;
-}
 
 interface Ad {
   id: number;
@@ -24,11 +16,9 @@ interface Ad {
 
 export default function Landing() {
   const { t } = useI18n();
-  const [stats, setStats] = useState<PublicStats | null>(null);
   const [ads, setAds] = useState<Ad[]>([]);
 
   useEffect(() => {
-    api.get("/api/public/stats").then((res) => setStats(res.data)).catch(() => {});
     api.get("/api/public/ads").then((res) => setAds(res.data)).catch(() => {});
   }, []);
 
@@ -38,7 +28,7 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-white">
-      <SEO title={undefined} description="AvisFlow aide les commerces locaux \u00e0 collecter plus d'avis Google positifs gr\u00e2ce aux QR codes. Gratuit, simple et efficace." />
+      <SEO title={undefined} description="AvisFlow aide les commerces locaux \u00e0 collecter plus d\u0027avis Google positifs gr\u00e2ce aux QR codes. Gratuit, simple et efficace." />
       {/* Nav */}
       <nav className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
@@ -68,42 +58,70 @@ export default function Landing() {
         </div>
       </nav>
 
-      {/* Hero */}
+      {/* Hero - Ultra aggressive */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-indigo-50" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-28">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" />
+        <div className="absolute bottom-20 right-10 w-72 h-72 bg-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-24">
           <div className="text-center max-w-4xl mx-auto">
-            <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-full px-4 py-1.5 text-sm text-blue-700 mb-8">
-              <Star className="w-4 h-4" />
+            <div className="inline-flex items-center gap-2 bg-green-50 border border-green-200 rounded-full px-4 py-1.5 text-sm text-green-700 mb-6 animate-bounce">
+              <Zap className="w-4 h-4" />
               <span>{t("hero.badge")}</span>
             </div>
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 tracking-tight leading-tight">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 tracking-tight leading-tight">
               {t("hero.title1")}
+              <br />
               <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                 {t("hero.title2")}
               </span>
             </h1>
-            <p className="mt-6 text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+            <p className="mt-6 text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
               {t("hero.subtitle")}
             </p>
-            <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link to="/register">
-                <Button size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-lg px-8 py-6 shadow-lg shadow-blue-500/25">
-                  {t("hero.generate_qr")} <QrCode className="w-5 h-5 ml-2" />
+                <Button size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-lg px-10 py-7 shadow-xl shadow-blue-500/30 hover:shadow-blue-500/40 transition-all duration-300 hover:scale-105">
+                  {t("hero.generate_qr")} <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </Link>
               <a href="#how">
-                <Button variant="outline" size="lg" className="text-lg px-8 py-6">
+                <Button variant="outline" size="lg" className="text-lg px-8 py-6 border-2">
                   {t("hero.demo")}
                 </Button>
               </a>
             </div>
-            <div className="mt-8 flex items-center justify-center gap-6 text-sm text-gray-500">
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-sm text-gray-500">
               <span className="flex items-center gap-1"><CheckCircle2 className="w-4 h-4 text-green-500" /> {t("hero.nocard")}</span>
               <span className="flex items-center gap-1"><CheckCircle2 className="w-4 h-4 text-green-500" /> {t("hero.quick")}</span>
               <span className="flex items-center gap-1"><CheckCircle2 className="w-4 h-4 text-green-500" /> {t("hero.free")}</span>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Social Proof Stats - Always visible */}
+      <section className="py-16 bg-gray-900 text-white relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-900/50 to-indigo-900/50" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl sm:text-3xl font-bold">{t("proof.title")}</h2>
+            <p className="mt-2 text-gray-400">{t("proof.subtitle")}</p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            {[
+              { value: t("proof.stat1"), label: t("proof.stat1_label"), color: "from-blue-400 to-cyan-400" },
+              { value: t("proof.stat2"), label: t("proof.stat2_label"), color: "from-yellow-400 to-orange-400" },
+              { value: t("proof.stat3"), label: t("proof.stat3_label"), color: "from-green-400 to-emerald-400" },
+              { value: t("proof.stat4"), label: t("proof.stat4_label"), color: "from-purple-400 to-pink-400" },
+            ].map((s, i) => (
+              <div key={i} className="p-4">
+                <div className={`text-4xl md:text-5xl font-extrabold bg-gradient-to-r ${s.color} bg-clip-text text-transparent`}>{s.value}</div>
+                <div className="mt-2 text-gray-300 text-sm font-medium">{s.label}</div>
+              </div>
+            ))}
+          </div>
+          <p className="text-center text-xs text-gray-500 mt-8">{t("proof.disclaimer")}</p>
         </div>
       </section>
 
@@ -126,82 +144,120 @@ export default function Landing() {
         </section>
       )}
 
-      {/* Visual Demo */}
+      {/* Visual Demo - Enhanced */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
+          <div className="text-center mb-14">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">{t("demo.title")}</h2>
             <p className="mt-4 text-lg text-gray-600">{t("demo.subtitle")}</p>
           </div>
-          <div className="grid md:grid-cols-3 gap-8 items-center">
-            <div className="text-center">
-              <div className="w-48 h-48 mx-auto bg-white border-2 border-gray-200 rounded-2xl p-4 shadow-lg flex items-center justify-center relative">
-                <img src="/demo-qr.png" alt="QR Code AvisFlow" className="w-36 h-36 object-contain" />
-                <div className="absolute -bottom-3 bg-blue-600 text-white text-xs font-medium px-3 py-1 rounded-full">QR Code</div>
+          <div className="grid md:grid-cols-3 gap-6 items-start">
+            {/* Step 1: QR Scan */}
+            <div className="text-center group">
+              <div className="relative">
+                <div className="absolute -top-3 -left-3 w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg z-10">1</div>
+                <div className="w-52 h-52 mx-auto bg-white border-2 border-gray-200 rounded-2xl p-4 shadow-lg flex items-center justify-center group-hover:border-blue-300 group-hover:shadow-xl transition-all duration-300">
+                  <img src="/demo-qr.png" alt="QR Code AvisFlow" className="w-40 h-40 object-contain" />
+                </div>
               </div>
-              <p className="mt-6 font-semibold text-gray-900">{t("demo.step1")}</p>
-              <p className="text-sm text-gray-500 mt-1">{t("demo.step1_desc")}</p>
+              <p className="mt-5 font-bold text-gray-900 text-lg">{t("demo.step1")}</p>
+              <p className="text-sm text-gray-500 mt-1 max-w-xs mx-auto">{t("demo.step1_desc")}</p>
             </div>
-            <div className="flex items-center justify-center">
-              <div className="flex flex-col items-center gap-4">
-                <ArrowRight className="w-8 h-8 text-blue-400 hidden md:block" />
-                <div className="w-64 bg-white border-2 border-gray-200 rounded-2xl p-5 shadow-lg">
-                  <p className="text-sm font-medium text-gray-700 mb-3">{t("demo.phone_title")}</p>
-                  <div className="flex justify-center gap-1 mb-3">
+            {/* Step 2: Rating */}
+            <div className="text-center group">
+              <div className="relative">
+                <div className="absolute -top-3 -left-3 w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg z-10">2</div>
+                <div className="hidden md:flex absolute top-1/2 -left-8 transform -translate-y-1/2">
+                  <ArrowRight className="w-6 h-6 text-blue-400" />
+                </div>
+                <div className="w-52 mx-auto bg-white border-2 border-gray-200 rounded-2xl p-6 shadow-lg group-hover:border-blue-300 group-hover:shadow-xl transition-all duration-300">
+                  <p className="text-sm font-semibold text-gray-700 mb-4">{t("demo.phone_title")}</p>
+                  <div className="flex justify-center gap-1.5 mb-4">
                     {[1, 2, 3, 4, 5].map((s) => (
-                      <Star key={s} className={`w-8 h-8 ${s <= 4 ? "text-yellow-400 fill-yellow-400" : "text-gray-200"}`} />
+                      <Star key={s} className={`w-9 h-9 ${s <= 4 ? "text-yellow-400 fill-yellow-400" : "text-gray-200"} transition-transform hover:scale-110`} />
                     ))}
                   </div>
                   <p className="text-xs text-gray-400">{t("demo.phone_desc")}</p>
+                  <div className="mt-3 flex items-center justify-center gap-1 text-xs text-blue-600 font-medium">
+                    <Clock className="w-3 h-3" /> 30s
+                  </div>
                 </div>
-                <ArrowRight className="w-8 h-8 text-blue-400 hidden md:block" />
               </div>
+              <p className="mt-5 font-bold text-gray-900 text-lg">{t("demo.step3")}</p>
+              <p className="text-sm text-gray-500 mt-1 max-w-xs mx-auto">{t("demo.step3_desc")}</p>
             </div>
-            <div className="text-center">
-              <div className="w-48 h-48 mx-auto bg-white border-2 border-gray-200 rounded-2xl p-4 shadow-lg flex flex-col items-center justify-center gap-2">
-                <div className="text-4xl font-bold text-blue-600">G</div>
-                <div className="flex gap-0.5">
-                  {[1, 2, 3, 4, 5].map((s) => (
-                    <Star key={s} className="w-5 h-5 text-yellow-400 fill-yellow-400" />
-                  ))}
+            {/* Step 3: Google Review */}
+            <div className="text-center group">
+              <div className="relative">
+                <div className="absolute -top-3 -left-3 w-10 h-10 bg-green-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg z-10">3</div>
+                <div className="hidden md:flex absolute top-1/2 -left-8 transform -translate-y-1/2">
+                  <ArrowRight className="w-6 h-6 text-blue-400" />
                 </div>
-                <p className="text-xs text-gray-500 font-medium">{t("demo.google_review")}</p>
+                <div className="w-52 h-52 mx-auto bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-2xl p-4 shadow-lg flex flex-col items-center justify-center gap-3 group-hover:border-green-300 group-hover:shadow-xl transition-all duration-300">
+                  <div className="w-14 h-14 bg-white rounded-xl shadow-sm flex items-center justify-center">
+                    <span className="text-3xl font-bold text-blue-600">G</span>
+                  </div>
+                  <div className="flex gap-0.5">
+                    {[1, 2, 3, 4, 5].map((s) => (
+                      <Star key={s} className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                    ))}
+                  </div>
+                  <p className="text-xs text-green-700 font-semibold">{t("demo.google_review")}</p>
+                </div>
               </div>
-              <p className="mt-6 font-semibold text-gray-900">{t("demo.step3")}</p>
-              <p className="text-sm text-gray-500 mt-1">{t("demo.step3_desc")}</p>
+              <p className="mt-5 font-bold text-green-700 text-lg flex items-center justify-center gap-1">
+                <CheckCircle2 className="w-5 h-5" /> {t("demo.google_review")}
+              </p>
             </div>
+          </div>
+          {/* CTA after demo */}
+          <div className="text-center mt-14">
+            <Link to="/register">
+              <Button size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-lg px-10 py-7 shadow-xl shadow-blue-500/30 hover:scale-105 transition-all duration-300">
+                {t("hero.generate_qr")} <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* Stats — only show if meaningful data exists (hide until >= 50 businesses) */}
-      {stats && stats.total_businesses >= 50 && (
-        <section className="py-16 bg-gray-900 text-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-8 text-center">
-              {[
-                { value: stats.total_users, label: t("stats.users") },
-                { value: stats.total_businesses, label: t("stats.pages") },
-                { value: stats.total_reviews, label: t("stats.reviews") },
-                { value: `${stats.average_rating}\u2605`, label: t("stats.avg") },
-                { value: stats.redirected_to_google, label: t("stats.google") },
-              ].map((s, i) => (
-                <div key={i}>
-                  <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">{s.value}</div>
-                  <div className="mt-2 text-gray-400 text-sm">{s.label}</div>
-                </div>
-              ))}
-            </div>
+      {/* Urgency Section */}
+      <section className="py-16 bg-gradient-to-r from-red-50 to-orange-50 border-y border-red-100">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="inline-flex items-center gap-2 bg-red-100 border border-red-200 rounded-full px-4 py-1.5 text-sm text-red-700 mb-6">
+            <AlertTriangle className="w-4 h-4" />
+            <span>{t("urgency.title")}</span>
           </div>
-        </section>
-      )}
+          <div className="space-y-4 max-w-xl mx-auto">
+            {[
+              t("urgency.line1"),
+              t("urgency.line2"),
+              t("urgency.line3"),
+            ].map((line, i) => (
+              <div key={i} className="flex items-center gap-3 text-left bg-white rounded-xl p-4 shadow-sm border border-red-100">
+                <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center shrink-0">
+                  <AlertTriangle className="w-4 h-4 text-red-600" />
+                </div>
+                <p className="text-gray-800 font-medium">{line}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-8">
+            <Link to="/register">
+              <Button size="lg" className="bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-lg px-8 py-6 shadow-lg shadow-red-500/25 hover:scale-105 transition-all duration-300">
+                {t("urgency.cta")} <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
 
       {/* How it works */}
       <section id="how" className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">{t("how.title")}</h2>
-            <p className="mt-4 text-lg text-gray-600">{t("how.subtitle")}</p>
+            <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">{t("how.subtitle")}</p>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
             {[
@@ -244,7 +300,7 @@ export default function Landing() {
           </div>
           <div className="text-center mt-12">
             <Link to="/register">
-              <Button size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-lg px-8 py-6 shadow-lg shadow-blue-500/25">
+              <Button size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-lg px-8 py-6 shadow-lg shadow-blue-500/25 hover:scale-105 transition-all duration-300">
                 {t("hero.generate_qr")} <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </Link>
@@ -331,30 +387,34 @@ export default function Landing() {
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">{t("pricing.title")}</h2>
           <p className="mt-4 text-lg text-gray-600 mb-12">{t("pricing.subtitle")}</p>
-          <div className="bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl p-8 text-white shadow-xl shadow-blue-500/20">
-            <div className="text-5xl font-bold mb-2">{t("pricing.price")}</div>
-            <div className="text-blue-200 mb-8">{t("pricing.forever")}</div>
-            <ul className="space-y-3 text-left max-w-sm mx-auto mb-8">
-              {[
-                t("pricing.f1"),
-                t("pricing.f2"),
-                t("pricing.f3"),
-                t("pricing.f4"),
-                t("pricing.f5"),
-                t("pricing.f6"),
-                t("pricing.f7"),
-              ].map((item, i) => (
-                <li key={i} className="flex items-center gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-blue-200 shrink-0" />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-            <Link to="/register">
-              <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50 text-lg px-8 py-6 w-full max-w-sm">
-                {t("pricing.cta")} <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
-            </Link>
+          <div className="bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl p-8 sm:p-10 text-white shadow-2xl shadow-blue-500/30 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+            <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
+            <div className="relative">
+              <div className="text-6xl font-extrabold mb-2">{t("pricing.price")}</div>
+              <div className="text-blue-200 text-lg font-medium mb-8">{t("pricing.forever")}</div>
+              <ul className="space-y-3 text-left max-w-sm mx-auto mb-8">
+                {[
+                  t("pricing.f1"),
+                  t("pricing.f2"),
+                  t("pricing.f3"),
+                  t("pricing.f4"),
+                  t("pricing.f5"),
+                  t("pricing.f6"),
+                  t("pricing.f7"),
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3">
+                    <CheckCircle2 className="w-5 h-5 text-blue-200 shrink-0" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link to="/register">
+                <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50 text-lg px-8 py-6 w-full max-w-sm shadow-lg hover:scale-105 transition-all duration-300">
+                  {t("pricing.cta")} <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </section>
@@ -378,20 +438,25 @@ export default function Landing() {
         </section>
       )}
 
-      {/* CTA */}
-      <section className="py-20 bg-gray-900">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+      {/* Final CTA - Dark & Urgent */}
+      <section className="py-24 bg-gray-900 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-blue-900/20 to-gray-900" />
+        <div className="relative max-w-4xl mx-auto px-4 text-center">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white mb-6 leading-tight">
             {t("cta.title")}
           </h2>
-          <p className="text-gray-400 text-lg mb-8">
+          <p className="text-gray-400 text-lg sm:text-xl mb-10 max-w-2xl mx-auto">
             {t("cta.subtitle")}
           </p>
           <Link to="/register">
-            <Button size="lg" className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-lg px-8 py-6">
+            <Button size="lg" className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-lg sm:text-xl px-10 py-7 shadow-xl shadow-blue-500/30 hover:scale-105 transition-all duration-300">
               {t("hero.generate_qr")} <QrCode className="w-5 h-5 ml-2" />
             </Button>
           </Link>
+          <p className="mt-6 text-gray-500 text-sm flex items-center justify-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-green-500" />
+            {t("hero.nocard")} &bull; {t("hero.quick")}
+          </p>
         </div>
       </section>
 

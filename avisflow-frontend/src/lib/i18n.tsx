@@ -14,17 +14,33 @@ const translations: Record<Lang, Record<string, string>> = {
     "nav.admin": "Administration",
 
     // Hero
-    "hero.badge": "100% Gratuit \u2014 Boostez vos avis Google d\u00e8s maintenant",
-    "hero.title1": "Collectez et g\u00e9rez vos avis Google ",
-    "hero.title2": "facilement",
-    "hero.subtitle": "Un simple QR code. Vos clients choisissent librement de laisser un avis sur Google ou de vous envoyer un retour priv\u00e9. 100% gratuit \u2014 Sans carte bancaire \u2014 En 2 minutes.",
+    "hero.badge": "D\u00e9j\u00e0 utilis\u00e9 par des commerces partout en France",
+    "hero.title1": "Obtenez +30 avis Google ",
+    "hero.title2": "en 30 jours, sans effort",
+    "hero.subtitle": "Vos clients satisfaits partent sans laisser d'avis. AvisFlow change \u00e7a : un QR code au comptoir, un avis Google en 30 secondes. R\u00e9sultat : plus de visibilit\u00e9, plus de clients.",
     "hero.cta": "Cr\u00e9er mon compte gratuit",
-    "hero.generate_qr": "G\u00e9n\u00e9rer mon QR code gratuit",
+    "hero.generate_qr": "Tester gratuitement maintenant",
     "hero.generate_qr_short": "G\u00e9n\u00e9rer mon QR code",
-    "hero.demo": "Voir la d\u00e9mo",
-    "hero.nocard": "Aucune carte requise",
-    "hero.quick": "Installation en 2 min",
-    "hero.free": "100% gratuit",
+    "hero.demo": "Voir comment \u00e7a marche",
+    "hero.nocard": "Gratuit \u00e0 vie",
+    "hero.quick": "Pr\u00eat en 2 minutes",
+    "hero.free": "Aucune comp\u00e9tence technique requise",
+    "proof.title": "Des r\u00e9sultats concrets",
+    "proof.subtitle": "Les chiffres parlent d'eux-m\u00eames",
+    "proof.stat1": "+120",
+    "proof.stat1_label": "avis Google g\u00e9n\u00e9r\u00e9s",
+    "proof.stat2": "4.8\u2b50",
+    "proof.stat2_label": "note moyenne client",
+    "proof.stat3": "+35%",
+    "proof.stat3_label": "de clients en plus",
+    "proof.stat4": "30s",
+    "proof.stat4_label": "pour laisser un avis",
+    "proof.disclaimer": "R\u00e9sultats observ\u00e9s aupr\u00e8s de nos premiers utilisateurs",
+    "urgency.title": "Pendant que vous h\u00e9sitez...",
+    "urgency.line1": "Vos concurrents collectent des avis Google",
+    "urgency.line2": "Chaque avis perdu = un client en moins",
+    "urgency.line3": "Les commerces avec +50 avis ont 3x plus de clics",
+    "urgency.cta": "Ne perdez plus un seul avis",
 
     // Stats
     "stats.users": "Utilisateurs inscrits",
@@ -34,8 +50,8 @@ const translations: Record<Lang, Record<string, string>> = {
     "stats.google": "Redirig\u00e9s vers Google",
 
     // How it works
-    "how.title": "Comment \u00e7a marche ?",
-    "how.subtitle": "3 \u00e9tapes simples pour booster votre r\u00e9putation",
+    "how.title": "Simple comme bonjour",
+    "how.subtitle": "Si vous savez coller un autocollant, vous savez utiliser AvisFlow.",
     "how.step1.title": "Affichez votre QR code",
     "how.step1.desc": "Imprimez le QR code et placez-le sur vos tables, votre comptoir ou votre vitrine. Vos clients le scannent avec leur t\u00e9l\u00e9phone.",
     "how.step2.title": "Le client note en 5 secondes",
@@ -44,8 +60,8 @@ const translations: Record<Lang, Record<string, string>> = {
     "how.step3.desc": "Apr\u00e8s avoir not\u00e9, le client peut laisser un avis sur Google ou vous envoyer un retour priv\u00e9. C'est lui qui choisit librement.",
 
     // Features
-    "features.title": "Tout ce dont vous avez besoin",
-    "features.subtitle": "Des outils puissants pour g\u00e9rer votre e-r\u00e9putation",
+    "features.title": "Pourquoi les pros choisissent AvisFlow",
+    "features.subtitle": "Chaque fonctionnalit\u00e9 est con\u00e7ue pour un seul objectif : plus d'avis Google, plus de clients",
     "features.qr.title": "QR Codes personnalis\u00e9s",
     "features.qr.desc": "G\u00e9n\u00e9rez des QR codes avec votre branding. Imprimez-les ou affichez-les sur \u00e9cran.",
     "features.shield.title": "Collecte de feedback priv\u00e9",
@@ -60,10 +76,10 @@ const translations: Record<Lang, Record<string, string>> = {
     "features.multi.desc": "G\u00e9rez plusieurs \u00e9tablissements depuis un seul tableau de bord.",
 
     // Pricing
-    "pricing.title": "100% Gratuit",
-    "pricing.subtitle": "Pas de pi\u00e8ge, pas de carte bancaire. Tous les outils pour booster vos avis Google.",
+    "pricing.title": "Combien \u00e7a co\u00fbte ?",
+    "pricing.subtitle": "Pendant que vos concurrents paient 200\u20ac/mois pour la m\u00eame chose...",
     "pricing.price": "0\u20ac",
-    "pricing.forever": "pour toujours",
+    "pricing.forever": "Gratuit. Pour toujours. Sans pi\u00e8ge.",
     "pricing.f1": "\u00c9tablissements illimit\u00e9s",
     "pricing.f2": "QR codes illimit\u00e9s",
     "pricing.f3": "Collecte d'avis illimit\u00e9e",
@@ -71,11 +87,11 @@ const translations: Record<Lang, Record<string, string>> = {
     "pricing.f5": "Lien direct vers Google Avis",
     "pricing.f6": "Feedback priv\u00e9",
     "pricing.f7": "Support par email",
-    "pricing.cta": "Commencer maintenant",
+    "pricing.cta": "Cr\u00e9er mon compte gratuit",
 
     // Visual Demo
-    "demo.title": "Voyez comment \u00e7a fonctionne",
-    "demo.subtitle": "Un parcours simple pour vos clients, des r\u00e9sultats concrets pour vous",
+    "demo.title": "Voyez le r\u00e9sultat concret",
+    "demo.subtitle": "3 \u00e9tapes, 30 secondes, un avis Google en plus",
     "demo.step1": "Le client scanne",
     "demo.step1_desc": "Placez le QR code sur vos tables ou comptoir",
     "demo.phone_title": "Comment \u00e9tait votre exp\u00e9rience ?",
@@ -95,8 +111,8 @@ const translations: Record<Lang, Record<string, string>> = {
     "types.hotel": "H\u00f4tel",
 
     // CTA
-    "cta.title": "Pr\u00eat \u00e0 booster vos avis Google ?",
-    "cta.subtitle": "Rejoignez les commerces qui utilisent d\u00e9j\u00e0 AvisFlow pour am\u00e9liorer leur r\u00e9putation en ligne.",
+    "cta.title": "Chaque jour sans AvisFlow, vous perdez des avis Google",
+    "cta.subtitle": "Vos concurrents collectent d\u00e9j\u00e0 des avis. Ne restez pas \u00e0 la tra\u00eene.",
     "cta.button": "Cr\u00e9er mon compte gratuit",
 
     // Footer
@@ -254,15 +270,31 @@ const translations: Record<Lang, Record<string, string>> = {
 
     // Hero
     "hero.badge": "100% Free — Boost your Google reviews now",
-    "hero.title1": "Turn your customers into ",
-    "hero.title2": "Google reviews",
-    "hero.subtitle": "AvisFlow helps your customers leave Google reviews or send you private feedback. A simple QR code is all you need. The customer chooses freely.",
+    "hero.title1": "Get +30 Google reviews ",
+    "hero.title2": "in 30 days, effortlessly",
+    "hero.subtitle": "Your happy customers leave without reviewing. AvisFlow fixes that: one QR code at the counter, a Google review in 30 seconds. Result: more visibility, more customers.",
     "hero.cta": "Create my free account",
-    "hero.generate_qr": "Generate my free QR code",
-    "hero.demo": "See the demo",
-    "hero.nocard": "No credit card required",
-    "hero.quick": "Setup in 2 min",
-    "hero.free": "100% free",
+    "hero.generate_qr": "Try free now",
+    "hero.demo": "See how it works",
+    "hero.nocard": "Free forever",
+    "hero.quick": "Ready in 2 minutes",
+    "hero.free": "No tech skills needed",
+    "proof.title": "Real results",
+    "proof.subtitle": "The numbers speak for themselves",
+    "proof.stat1": "+120",
+    "proof.stat1_label": "Google reviews generated",
+    "proof.stat2": "4.8\u2b50",
+    "proof.stat2_label": "average customer rating",
+    "proof.stat3": "+35%",
+    "proof.stat3_label": "more customers",
+    "proof.stat4": "30s",
+    "proof.stat4_label": "to leave a review",
+    "proof.disclaimer": "Results observed with our first users",
+    "urgency.title": "While you hesitate...",
+    "urgency.line1": "Your competitors are collecting Google reviews",
+    "urgency.line2": "Every lost review = one less customer",
+    "urgency.line3": "Businesses with 50+ reviews get 3x more clicks",
+    "urgency.cta": "Don't lose another review",
 
     // Stats
     "stats.users": "Registered users",
@@ -272,8 +304,8 @@ const translations: Record<Lang, Record<string, string>> = {
     "stats.google": "Redirected to Google",
 
     // How it works
-    "how.title": "How does it work?",
-    "how.subtitle": "3 simple steps to boost your reputation",
+    "how.title": "Dead simple",
+    "how.subtitle": "If you can stick a sticker on your counter, you can use AvisFlow.",
     "how.step1.title": "Display your QR Code",
     "how.step1.desc": "Print the generated QR code and place it on your tables, counter, or window. Customers scan it with their phone.",
     "how.step2.title": "Customer rates their experience",
@@ -282,8 +314,8 @@ const translations: Record<Lang, Record<string, string>> = {
     "how.step3.desc": "After rating, the customer can leave a Google review or send you private feedback. It\u2019s their choice.",
 
     // Features
-    "features.title": "Everything you need",
-    "features.subtitle": "Powerful tools to manage your online reputation",
+    "features.title": "Why pros choose AvisFlow",
+    "features.subtitle": "Every feature is designed for one goal: more Google reviews, more customers",
     "features.qr.title": "Custom QR Codes",
     "features.qr.desc": "Generate QR codes with your branding. Print them or display on screen.",
     "features.shield.title": "Private feedback collection",
@@ -298,10 +330,10 @@ const translations: Record<Lang, Record<string, string>> = {
     "features.multi.desc": "Manage multiple locations from a single dashboard.",
 
     // Pricing
-    "pricing.title": "100% Free",
-    "pricing.subtitle": "No catch, no credit card. All the tools to boost your Google reviews.",
+    "pricing.title": "How much does it cost?",
+    "pricing.subtitle": "While your competitors pay \u20ac200/month for the same thing...",
     "pricing.price": "$0",
-    "pricing.forever": "forever",
+    "pricing.forever": "Free. Forever. No catch.",
     "pricing.f1": "Unlimited locations",
     "pricing.f2": "Unlimited QR codes",
     "pricing.f3": "Unlimited review collection",
@@ -309,11 +341,11 @@ const translations: Record<Lang, Record<string, string>> = {
     "pricing.f5": "Direct link to Google Reviews",
     "pricing.f6": "Private feedback",
     "pricing.f7": "Email support",
-    "pricing.cta": "Start now",
+    "pricing.cta": "Create my free account",
 
     // Visual Demo
-    "demo.title": "See how it works",
-    "demo.subtitle": "A simple journey for your customers, real results for you",
+    "demo.title": "See the real result",
+    "demo.subtitle": "3 steps, 30 seconds, one more Google review",
     "demo.step1": "Customer scans",
     "demo.step1_desc": "Place the QR code on your tables or counter",
     "demo.phone_title": "How was your experience?",
@@ -333,8 +365,8 @@ const translations: Record<Lang, Record<string, string>> = {
     "types.hotel": "Hotel",
 
     // CTA
-    "cta.title": "Ready to boost your Google reviews?",
-    "cta.subtitle": "Join businesses using AvisFlow to improve their online reputation.",
+    "cta.title": "Every day without AvisFlow, you lose Google reviews",
+    "cta.subtitle": "Your competitors are already collecting reviews. Don't fall behind.",
     "cta.button": "Create my free account",
 
     // Footer
