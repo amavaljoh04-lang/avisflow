@@ -252,11 +252,11 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* How it works */}
+      {/* How it works - SALES oriented: sell the RESULT */}
       <section id="how" className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">{t("how.title")}</h2>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-900">{t("how.title")}</h2>
             <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">{t("how.subtitle")}</p>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
@@ -266,42 +266,127 @@ export default function Landing() {
                 step: "1",
                 title: t("how.step1.title"),
                 desc: t("how.step1.desc"),
-                time: "30s",
+                result: t("how.step1.result"),
+                color: "from-blue-500 to-indigo-500",
+                bgColor: "bg-blue-50",
+                borderColor: "border-blue-200",
+                resultBg: "bg-blue-50 text-blue-700",
               },
               {
                 icon: Star,
                 step: "2",
                 title: t("how.step2.title"),
                 desc: t("how.step2.desc"),
-                time: "10s",
+                result: t("how.step2.result"),
+                color: "from-yellow-500 to-orange-500",
+                bgColor: "bg-yellow-50",
+                borderColor: "border-yellow-200",
+                resultBg: "bg-yellow-50 text-yellow-700",
               },
               {
                 icon: TrendingUp,
                 step: "3",
                 title: t("how.step3.title"),
                 desc: t("how.step3.desc"),
-                time: "1 clic",
+                result: t("how.step3.result"),
+                color: "from-green-500 to-emerald-500",
+                bgColor: "bg-green-50",
+                borderColor: "border-green-200",
+                resultBg: "bg-green-50 text-green-700",
               },
             ].map((item, i) => (
-              <div key={i} className="relative bg-gradient-to-b from-gray-50 to-white rounded-2xl p-8 border border-gray-100 hover:border-blue-200 hover:shadow-lg transition-all duration-300">
-                <div className="absolute -top-4 left-8 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+              <div key={i} className={`relative bg-white rounded-2xl p-8 border-2 ${item.borderColor} hover:shadow-xl transition-all duration-300 group`}>
+                <div className={`absolute -top-5 left-8 w-10 h-10 bg-gradient-to-r ${item.color} rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg`}>
                   {item.step}
                 </div>
-                <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mb-5">
-                  <item.icon className="w-6 h-6 text-blue-600" />
+                <div className={`w-14 h-14 ${item.bgColor} rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300`}>
+                  <item.icon className="w-7 h-7 text-gray-700" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">{item.title}</h3>
-                <p className="text-gray-600 leading-relaxed">{item.desc}</p>
-                <div className="mt-4 inline-flex items-center gap-1 text-sm text-blue-600 font-medium bg-blue-50 px-3 py-1 rounded-full">
-                  <CheckCircle2 className="w-3.5 h-3.5" /> {item.time}
+                <h3 className="text-xl font-bold text-gray-900 mb-3">{item.title}</h3>
+                <p className="text-gray-600 leading-relaxed mb-4">{item.desc}</p>
+                <div className={`inline-flex items-center gap-2 text-sm font-semibold ${item.resultBg} px-4 py-2 rounded-full`}>
+                  <CheckCircle2 className="w-4 h-4" /> {item.result}
                 </div>
               </div>
             ))}
           </div>
-          <div className="text-center mt-12">
+          <div className="text-center mt-14">
             <Link to="/register">
-              <Button size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-lg px-8 py-6 shadow-lg shadow-blue-500/25 hover:scale-105 transition-all duration-300">
+              <Button size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-lg px-10 py-7 shadow-xl shadow-blue-500/30 hover:scale-105 transition-all duration-300">
                 {t("hero.generate_qr")} <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Before / After Results */}
+      <section className="py-20 bg-gradient-to-br from-gray-900 via-blue-900 to-indigo-900 text-white relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-96 h-96 bg-blue-500/10 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl" />
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-indigo-500/10 rounded-full translate-x-1/2 translate-y-1/2 blur-3xl" />
+        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-14">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold">{t("results.title")}</h2>
+            <p className="mt-4 text-lg text-gray-300">{t("results.subtitle")}</p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              {
+                label: t("results.reviews_label"),
+                before: t("results.reviews_before"),
+                after: t("results.reviews_after"),
+                icon: MessageSquare,
+                afterColor: "text-green-400",
+              },
+              {
+                label: t("results.rating_label"),
+                before: t("results.rating_before"),
+                after: t("results.rating_after"),
+                icon: Star,
+                afterColor: "text-yellow-400",
+                showStars: true,
+              },
+              {
+                label: t("results.visibility_label"),
+                before: t("results.visibility_before"),
+                after: t("results.visibility_after"),
+                icon: TrendingUp,
+                afterColor: "text-blue-400",
+              },
+            ].map((item, i) => (
+              <div key={i} className="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-white/20 transition-all duration-300">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center">
+                    <item.icon className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="font-bold text-lg">{item.label}</h3>
+                </div>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-red-400 uppercase tracking-wider">{t("results.before")}</span>
+                    <span className="text-2xl font-bold text-red-400/80 line-through decoration-red-500/50">{item.before}</span>
+                  </div>
+                  <div className="w-full h-px bg-gradient-to-r from-red-500/30 via-transparent to-green-500/30" />
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-green-400 uppercase tracking-wider">{t("results.after")}</span>
+                    <span className={`text-3xl font-extrabold ${item.afterColor}`}>{item.after}</span>
+                  </div>
+                  {item.showStars && (
+                    <div className="flex justify-end gap-0.5">
+                      {[1, 2, 3, 4, 5].map((s) => (
+                        <Star key={s} className={`w-4 h-4 ${s <= 4 ? "text-yellow-400 fill-yellow-400" : s <= 4.7 ? "text-yellow-400 fill-yellow-400 opacity-70" : "text-gray-600"}`} />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="text-center text-xs text-gray-400 mt-8">{t("results.disclaimer")}</p>
+          <div className="text-center mt-10">
+            <Link to="/register">
+              <Button size="lg" className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-lg px-10 py-7 shadow-xl shadow-green-500/30 hover:scale-105 transition-all duration-300 text-white">
+                {t("results.cta")} <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </Link>
           </div>
