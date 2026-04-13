@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import {
   Star, ArrowLeft, QrCode, BarChart3, MessageSquare, TrendingUp, Download,
   Plus, Loader2, Trash2, ExternalLink, ThumbsUp, ThumbsDown, Eye, Settings, Save,
+  Upload, Code, Copy, Palette,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "@/lib/api";
@@ -68,6 +69,12 @@ export default function BusinessDetail() {
   const [editThreshold, setEditThreshold] = useState(4);
   const [saving, setSaving] = useState(false);
   const [loadError, setLoadError] = useState(false);
+  // QR customization state
+  const [qrColor, setQrColor] = useState("#2563eb");
+  const [qrStyle, setQrStyle] = useState<"square" | "rounded">("square");
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [hasLogo, setHasLogo] = useState(false);
+  const [embedCode, setEmbedCode] = useState("");
 
   const fetchAll = async (isInitial = true) => {
     try {
@@ -87,6 +94,8 @@ export default function BusinessDetail() {
       setEditGoogleUrl(bizRes.data.google_review_url || "");
       setEditColor(bizRes.data.primary_color || "#2563eb");
       setEditThreshold(bizRes.data.positive_threshold || 4);
+      setQrColor(bizRes.data.primary_color || "#2563eb");
+      setHasLogo(!!bizRes.data.logo_url);
       setAnalytics(analyticsRes.data);
       setReviews(reviewsRes.data);
       setQrcodes(qrRes.data);
@@ -101,6 +110,13 @@ export default function BusinessDetail() {
         }
       }
       setQrImages(images);
+      // Fetch embed code
+      try {
+        const embedRes = await api.get(`/api/public/embed-code/${bizRes.data.slug}`);
+        setEmbedCode(embedRes.data.html);
+      } catch {
+        // ignore
+      }
     } catch {
       if (isInitial) {
         setLoadError(true);
@@ -127,9 +143,48 @@ export default function BusinessDetail() {
     }
   };
 
+  const uploadLogo = async (file: File) => {
+    setUploadingLogo(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      await api.post(`/api/businesses/${id}/logo`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      toast.success("Logo uploadé !");
+      setHasLogo(true);
+      await refreshQrImages();
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail || "Erreur lors de l'upload");
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
+  const refreshQrImages = async () => {
+    const images: QRImageData = {};
+    for (const qr of qrcodes) {
+      try {
+        const params = new URLSearchParams();
+        if (qrColor) params.set("color", qrColor);
+        params.set("style", qrStyle);
+        params.set("with_logo", "1");
+        const dataRes = await api.get(`/api/businesses/${id}/qrcodes/${qr.id}/data?${params}`);
+        images[qr.id] = dataRes.data.image_base64;
+      } catch {
+        // ignore
+      }
+    }
+    setQrImages(images);
+  };
+
   const downloadQR = async (qrId: number, label: string) => {
     try {
-      const res = await api.get(`/api/businesses/${id}/qrcodes/${qrId}/image`, { responseType: "blob" });
+      const params = new URLSearchParams();
+      if (qrColor) params.set("color", qrColor);
+      params.set("style", qrStyle);
+      params.set("logo", "1");
+      const res = await api.get(`/api/businesses/${id}/qrcodes/${qrId}/image?${params}`, { responseType: "blob" });
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const a = document.createElement("a");
       a.href = url;
@@ -391,6 +446,53 @@ export default function BusinessDetail() {
         {/* QR Codes Tab */}
         {tab === "qrcodes" && (
           <div className="space-y-6">
+            {/* QR Customization */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Palette className="w-5 h-5 text-blue-600" /> Personnalisation du QR Code
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label>Couleur du QR Code</Label>
+                    <div className="flex items-center gap-2">
+                      <input type="color" value={qrColor} onChange={(e) => setQrColor(e.target.value)} className="w-10 h-10 rounded border cursor-pointer" />
+                      <Input value={qrColor} onChange={(e) => setQrColor(e.target.value)} className="w-28" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Style</Label>
+                    <div className="flex gap-2">
+                      <Button variant={qrStyle === "square" ? "default" : "outline"} size="sm" onClick={() => setQrStyle("square")} className={qrStyle === "square" ? "bg-blue-600" : ""}>
+                        Carré
+                      </Button>
+                      <Button variant={qrStyle === "rounded" ? "default" : "outline"} size="sm" onClick={() => setQrStyle("rounded")} className={qrStyle === "rounded" ? "bg-blue-600" : ""}>
+                        Arrondi
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Logo au centre</Label>
+                    <div className="flex items-center gap-2">
+                      <label className="cursor-pointer">
+                        <input type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={(e) => { if (e.target.files?.[0]) uploadLogo(e.target.files[0]); }} />
+                        <div className="flex items-center gap-2 px-3 py-2 border rounded-md text-sm hover:bg-gray-50">
+                          {uploadingLogo ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                          {hasLogo ? "Changer le logo" : "Ajouter un logo"}
+                        </div>
+                      </label>
+                      {hasLogo && <Badge className="bg-green-100 text-green-700 hover:bg-green-100">Logo actif</Badge>}
+                    </div>
+                  </div>
+                </div>
+                <Button variant="outline" size="sm" onClick={refreshQrImages}>
+                  <QrCode className="w-4 h-4 mr-1" /> Appliquer aux QR Codes
+                </Button>
+              </CardContent>
+            </Card>
+
             <Card>
               <CardContent className="p-5">
                 <div className="flex items-end gap-4">
@@ -516,6 +618,29 @@ export default function BusinessDetail() {
                     <input type="color" id="edit-color" value={editColor} onChange={(e) => setEditColor(e.target.value)} className="w-10 h-10 rounded border cursor-pointer" />
                     <Input value={editColor} onChange={(e) => setEditColor(e.target.value)} className="w-32" />
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Embed Widget */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Code className="w-5 h-5 text-blue-600" /> Widget intégrable
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <p className="text-sm text-gray-500">Copiez ce code HTML et collez-le sur votre site web pour afficher vos avis avec un lien "Propulsé par AvisFlow".</p>
+                <div className="relative">
+                  <pre className="bg-gray-900 text-green-400 p-4 rounded-lg text-xs overflow-x-auto">{embedCode || "Chargement..."}</pre>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="absolute top-2 right-2 text-gray-400 hover:text-white"
+                    onClick={() => { navigator.clipboard.writeText(embedCode); toast.success("Code copié !"); }}
+                  >
+                    <Copy className="w-4 h-4" />
+                  </Button>
                 </div>
               </CardContent>
             </Card>

@@ -1,9 +1,14 @@
 import re
+import os
 import uuid
-from fastapi import APIRouter, HTTPException, Depends
+import base64
+from fastapi import APIRouter, HTTPException, Depends, UploadFile, File
 from app.database import get_db
 from app.models.schemas import BusinessCreate, BusinessUpdate, BusinessResponse
 from app.utils.auth import get_current_user
+
+UPLOAD_DIR = os.getenv("UPLOAD_DIR", "/data/uploads")
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 router = APIRouter(prefix="/api/businesses", tags=["businesses"])
 
@@ -80,6 +85,62 @@ async def delete_business(business_id: int, user: dict = Depends(get_current_use
             raise HTTPException(status_code=404, detail="Business not found")
         db.execute("UPDATE businesses SET is_active = 0 WHERE id = ?", (business_id,))
         return {"message": "Business deleted"}
+
+
+@router.post("/{business_id}/logo")
+async def upload_logo(business_id: int, file: UploadFile = File(...), user: dict = Depends(get_current_user)):
+    """Upload a logo for a business. Used for personalized QR codes."""
+    with get_db() as db:
+        biz = db.execute(
+            "SELECT * FROM businesses WHERE id = ? AND user_id = ?",
+            (business_id, user["id"]),
+        ).fetchone()
+        if not biz:
+            raise HTTPException(status_code=404, detail="Business not found")
+
+        content = await file.read()
+        if len(content) > 2 * 1024 * 1024:
+            raise HTTPException(status_code=400, detail="Logo trop volumineux (max 2 Mo)")
+
+        ext = file.filename.rsplit(".", 1)[-1].lower() if file.filename and "." in file.filename else "png"
+        if ext not in ("png", "jpg", "jpeg", "webp", "svg"):
+            raise HTTPException(status_code=400, detail="Format non supporté (PNG, JPG, WEBP)")
+
+        filename = f"logo_{business_id}_{uuid.uuid4().hex[:8]}.{ext}"
+        filepath = os.path.join(UPLOAD_DIR, filename)
+        with open(filepath, "wb") as f:
+            f.write(content)
+
+        logo_url = f"/uploads/{filename}"
+        db.execute("UPDATE businesses SET logo_url = ? WHERE id = ?", (logo_url, business_id))
+
+        return {"logo_url": logo_url}
+
+
+@router.get("/{business_id}/logo-data")
+async def get_logo_base64(business_id: int, user: dict = Depends(get_current_user)):
+    """Get business logo as base64 data URI."""
+    with get_db() as db:
+        biz = db.execute(
+            "SELECT * FROM businesses WHERE id = ? AND user_id = ?",
+            (business_id, user["id"]),
+        ).fetchone()
+        if not biz:
+            raise HTTPException(status_code=404, detail="Business not found")
+
+        if not biz["logo_url"]:
+            return {"logo_base64": None}
+
+        filepath = os.path.join(UPLOAD_DIR, os.path.basename(biz["logo_url"]))
+        if not os.path.exists(filepath):
+            return {"logo_base64": None}
+
+        with open(filepath, "rb") as f:
+            data = f.read()
+        ext = filepath.rsplit(".", 1)[-1].lower()
+        mime = {"png": "image/png", "jpg": "image/jpeg", "jpeg": "image/jpeg", "webp": "image/webp"}.get(ext, "image/png")
+        b64 = base64.b64encode(data).decode()
+        return {"logo_base64": f"data:{mime};base64,{b64}"}
 
 
 def _biz_response(row) -> BusinessResponse:

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Star, Send, Loader2, CheckCircle2, MessageSquare, ExternalLink } from "lucide-react";
+import { Star, Send, Loader2, CheckCircle2, MessageSquare, ExternalLink, Share2 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import toast, { Toaster } from "react-hot-toast";
 import api from "@/lib/api";
@@ -131,8 +131,28 @@ export default function ReviewPage() {
                 </Button>
               </a>
             )}
+            {/* Social sharing */}
+            <div className="mt-6 pt-4 border-t">
+              <p className="text-xs text-gray-400 mb-2">{t("review.share")}</p>
+              <div className="flex justify-center gap-3">
+                <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`} target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center hover:bg-blue-200 transition">
+                  <span className="text-blue-600 text-sm font-bold">f</span>
+                </a>
+                <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Je viens de donner mon avis sur ${business?.name} !`)}&url=${encodeURIComponent(window.location.href)}`} target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-sky-100 flex items-center justify-center hover:bg-sky-200 transition">
+                  <span className="text-sky-500 text-sm font-bold">X</span>
+                </a>
+                <button onClick={() => { navigator.clipboard.writeText(window.location.href); toast.success("Lien copi\u00e9 !"); }} className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition">
+                  <Share2 className="w-4 h-4 text-gray-600" />
+                </button>
+              </div>
+            </div>
           </CardContent>
         </Card>
+        <p className="text-center text-xs text-gray-400 mt-4">
+          <a href="https://avisflow.online" target="_blank" rel="noopener noreferrer" className="hover:text-blue-500 transition">
+            {t("review.powered")} <span className="font-medium text-gray-500">AvisFlow</span>
+          </a>
+        </p>
       </div>
     );
   }
@@ -246,7 +266,9 @@ export default function ReviewPage() {
         </Card>
 
         <p className="text-center text-xs text-gray-400 mt-6">
-          {t("review.powered")} <span className="font-medium text-gray-500">AvisFlow</span>
+          <a href="https://avisflow.online" target="_blank" rel="noopener noreferrer" className="hover:text-blue-500 transition">
+            {t("review.powered")} <span className="font-medium text-gray-500">AvisFlow</span>
+          </a>
         </p>
       </div>
     </div>
