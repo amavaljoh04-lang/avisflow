@@ -178,8 +178,8 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Stats — only show if real data exists */}
-      {stats && (stats.total_users > 0 || stats.total_reviews > 0) && (
+      {/* Stats — only show if meaningful data exists (hide when numbers are too low) */}
+      {stats && (stats.total_users >= 5 || stats.total_reviews >= 5) && (
         <section className="py-16 bg-gray-900 text-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-2 md:grid-cols-5 gap-8 text-center">
