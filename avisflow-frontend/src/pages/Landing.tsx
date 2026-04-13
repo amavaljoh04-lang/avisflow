@@ -145,8 +145,8 @@ export default function Landing() {
                     <TrendingUp className="w-4 h-4 text-green-600" />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500">Google Reviews</p>
-                    <p className="text-sm font-bold text-gray-900">+30 <span className="text-green-600 text-xs font-medium">this month</span></p>
+                    <p className="text-xs text-gray-500">{t("results.reviews_label")}</p>
+                    <p className="text-sm font-bold text-gray-900">{t("hero.badge_reviews")} <span className="text-green-600 text-xs font-medium">{t("hero.badge_reviews_label")}</span></p>
                   </div>
                 </div>
                 <div className="absolute -bottom-2 -left-6 bg-white rounded-2xl shadow-lg border border-gray-100 px-4 py-3 flex items-center gap-2">
@@ -155,7 +155,7 @@ export default function Landing() {
                       <Star key={s} className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
                     ))}
                   </div>
-                  <span className="text-sm font-bold text-gray-900">4.8</span>
+                  <span className="text-sm font-bold text-gray-900">{t("hero.badge_rating")}</span>
                 </div>
               </div>
             </div>
