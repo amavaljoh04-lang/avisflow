@@ -111,10 +111,7 @@ export default function BusinessDetail() {
   const [newAutoTrigger, setNewAutoTrigger] = useState("positive");
   const [newAutoMessage, setNewAutoMessage] = useState("");
   const { t } = useI18n();
-  // Google search & URL resolution state
-  const [googleSearchQuery, setGoogleSearchQuery] = useState("");
-  const [googleSearching, setGoogleSearching] = useState(false);
-  const [googleError, setGoogleError] = useState("");
+  // Google URL resolution state
   const [googleResolving, setGoogleResolving] = useState(false);
 
   // Client-side smart URL parser
@@ -142,7 +139,6 @@ export default function BusinessDetail() {
   // Handle URL paste: try client-side first, then server-side resolution
   const handleGoogleUrlPaste = async (value: string) => {
     setEditGoogleUrl(value);
-    setGoogleError("");
     // Try client-side parsing first
     const parsed = parseGoogleUrl(value);
     if (parsed && parsed !== value) {
@@ -164,25 +160,6 @@ export default function BusinessDetail() {
     }
   };
 
-  // Search by business name via backend
-  const searchGoogleByName = async () => {
-    if (!googleSearchQuery.trim()) return;
-    setGoogleSearching(true);
-    setGoogleError("");
-    try {
-      const res = await api.get("/api/google-resolve-url", { params: { query: googleSearchQuery } });
-      if (res.data.success && res.data.review_url) {
-        setEditGoogleUrl(res.data.review_url);
-        toast.success("Commerce trouvé ! Lien d'avis Google appliqué.");
-        setGoogleSearchQuery("");
-      } else {
-        setGoogleError(res.data.error || "Commerce non trouvé.");
-      }
-    } catch {
-      setGoogleError("Erreur de recherche. Essayez la méthode manuelle ci-dessous.");
-    }
-    setGoogleSearching(false);
-  };
 
   const fetchAll = async (isInitial = true) => {
     try {
@@ -1002,29 +979,9 @@ export default function BusinessDetail() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-4">
-                  {/* Method 1: Search by name */}
-                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 space-y-3">
-                    <p className="text-sm font-semibold text-blue-800">Méthode 1 — Recherche par nom</p>
-                    <p className="text-xs text-blue-700">Tapez le nom exact de votre commerce + ville :</p>
-                    <div className="flex gap-2">
-                      <Input
-                        value={googleSearchQuery}
-                        onChange={(e) => { setGoogleSearchQuery(e.target.value); setGoogleError(""); }}
-                        placeholder="Ex: Atelier K coiffeur Bordeaux"
-                        className="flex-1"
-                        onKeyDown={(e) => e.key === "Enter" && searchGoogleByName()}
-                      />
-                      <Button onClick={searchGoogleByName} disabled={googleSearching || !googleSearchQuery.trim()} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white whitespace-nowrap">
-                        {googleSearching ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
-                        {googleSearching ? "Recherche..." : "Chercher"}
-                      </Button>
-                    </div>
-                    {googleError && <p className="text-xs text-orange-600">{googleError}</p>}
-                  </div>
-
-                  {/* Method 2: Share from Google Maps (mobile-friendly) */}
+                  {/* Share from Google Maps (mobile-friendly) */}
                   <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4 space-y-3">
-                    <p className="text-sm font-semibold text-green-800">Méthode 2 — Depuis Google Maps (mobile)</p>
+                    <p className="text-sm font-semibold text-green-800">Trouver votre lien Google Avis</p>
                     <ol className="text-xs text-green-700 space-y-2 list-decimal list-inside">
                       <li>
                         <span className="font-medium">Ouvrir Google Maps</span> et chercher votre commerce :
