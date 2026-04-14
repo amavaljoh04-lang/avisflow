@@ -86,9 +86,9 @@ export default function ReviewPage() {
       setGoogleUrl(res.data.google_review_url);
       setAutoResponse(res.data.auto_response || null);
       if (action === "google" && res.data.google_review_url) {
-        toast.success(t("review.thanks_google"));
-        setSubmitted(true);
-        window.open(res.data.google_review_url, "_blank");
+        // Redirect directly to Google review — no extra page
+        window.location.href = res.data.google_review_url;
+        return;
       } else {
         setSubmitted(true);
         toast.success(t("review.thanks"));

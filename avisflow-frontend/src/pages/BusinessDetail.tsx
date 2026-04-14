@@ -932,7 +932,16 @@ export default function BusinessDetail() {
                 <div className="space-y-2">
                   <Label htmlFor="edit-google-url">URL de la page Google Avis</Label>
                   <Input id="edit-google-url" value={editGoogleUrl} onChange={(e) => setEditGoogleUrl(e.target.value)} placeholder="https://search.google.com/local/writereview?placeid=..." />
-                  <p className="text-xs text-gray-500">Trouvez cette URL en cherchant votre commerce sur Google Maps → cliquez "Écrire un avis" → copiez l'URL</p>
+                  <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 space-y-2">
+                    <p className="text-xs font-semibold text-blue-800">Comment obtenir le bon lien (ouverture directe du formulaire) :</p>
+                    <ol className="text-xs text-blue-700 space-y-1 list-decimal list-inside">
+                      <li>Cherchez votre commerce sur <a href="https://www.google.com/maps" target="_blank" rel="noopener noreferrer" className="underline font-medium">Google Maps</a></li>
+                      <li>Cliquez sur votre fiche → cliquez <strong>"Donner un avis"</strong></li>
+                      <li>Copiez l'URL de la page qui s'ouvre (elle contient <code className="bg-blue-100 px-1 rounded">writereview</code>)</li>
+                      <li>Collez-la ici — le client sera redirigé <strong>directement</strong> sur le formulaire Google, sans clic supplémentaire</li>
+                    </ol>
+                    <p className="text-xs text-blue-600">Format idéal : <code className="bg-blue-100 px-1 rounded text-xs">https://search.google.com/local/writereview?placeid=VOTRE_ID</code></p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
