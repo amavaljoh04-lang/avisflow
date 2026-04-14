@@ -240,57 +240,6 @@ async def directory(category: str = "", search: str = ""):
         ]
 
 
-@app.get("/api/google-place-search")
-async def google_place_search(query: str):
-    """Search Google Maps for a business and return the direct write-review URL."""
-    import httpx
-    import re
-    import urllib.parse
-
-    if not query or len(query.strip()) < 3:
-        return {"results": []}
-
-    search_url = f"https://www.google.com/maps/search/{urllib.parse.quote(query)}"
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept-Language": "fr-FR,fr;q=0.9,en;q=0.8",
-    }
-
-    try:
-        async with httpx.AsyncClient(follow_redirects=True, timeout=10.0) as client:
-            resp = await client.get(search_url, headers=headers)
-            text = resp.text
-
-            results = []
-
-            # Extract Place IDs (ChIJ format)
-            place_ids = re.findall(r'ChIJ[A-Za-z0-9_-]{20,}', text)
-            seen = set()
-            for pid in place_ids:
-                if pid not in seen:
-                    seen.add(pid)
-                    results.append({
-                        "place_id": pid,
-                        "review_url": f"https://search.google.com/local/writereview?placeid={pid}",
-                    })
-
-            # Also extract CIDs (numeric IDs)
-            cids = re.findall(r'0x[0-9a-f]+:0x([0-9a-f]+)', text)
-            for cid_hex in cids:
-                cid = str(int(cid_hex, 16))
-                if cid not in seen:
-                    seen.add(cid)
-                    results.append({
-                        "place_id": cid,
-                        "review_url": f"https://search.google.com/local/writereview?placecid={cid}",
-                    })
-
-            return {"results": results[:5], "search_query": query}
-
-    except Exception as e:
-        return {"results": [], "error": str(e)}
-
-
 @app.get("/api/public/stats")
 async def public_stats():
     """Public stats for landing page - no auth required."""
