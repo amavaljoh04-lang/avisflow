@@ -47,12 +47,16 @@ export default function Landing() {
             <Link to="/directory" className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors">{t("directory.title")}</Link>
           </div>
           <div className="flex items-center gap-2">
+            <Link to="/blog" className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors md:hidden">{t("nav.blog")}</Link>
+            <Link to="/directory">
+              <Button variant="outline" size="sm" className="font-medium">{t("nav.directory")}</Button>
+            </Link>
             <LangSwitcher />
             <Link to="/login">
               <Button variant="ghost" size="sm" className="text-gray-600 font-medium">{t("nav.login")}</Button>
             </Link>
             <Link to="/register">
-              <Button size="sm" className="bg-blue-600 hover:bg-blue-700 shadow-sm shadow-blue-600/20 font-medium">
+              <Button size="sm" className="bg-blue-600 hover:bg-blue-700 shadow-sm shadow-blue-600/20 font-medium hidden sm:inline-flex">
                 {t("nav.signup")}
               </Button>
             </Link>
