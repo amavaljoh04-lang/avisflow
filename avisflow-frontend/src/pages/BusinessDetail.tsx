@@ -23,7 +23,7 @@ interface Analytics {
   redirected_to_google: number;
   total_scans: number;
   rating_distribution: Record<string, number>;
-  reviews_by_day: Array<{ date: string; count: number }>;
+  reviews_by_day: Array<{ day: string; count: number }>;
 }
 
 interface Review {
@@ -507,13 +507,13 @@ export default function BusinessDetail() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
-                    {analytics.reviews_by_day.slice(-14).map((day) => (
-                      <div key={day.date} className="flex items-center gap-3">
-                        <span className="text-xs text-gray-500 w-20">{new Date(day.date).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}</span>
+                    {analytics.reviews_by_day.slice(-14).map((d) => (
+                      <div key={d.day} className="flex items-center gap-3">
+                        <span className="text-xs text-gray-500 w-20">{new Date(d.day).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}</span>
                         <div className="flex-1 bg-gray-100 rounded-full h-4 overflow-hidden">
-                          <div className="h-full bg-blue-500 rounded-full" style={{ width: `${Math.min((day.count / Math.max(...analytics.reviews_by_day.map(d => d.count))) * 100, 100)}%` }} />
+                          <div className="h-full bg-blue-500 rounded-full" style={{ width: `${Math.min((d.count / Math.max(...analytics.reviews_by_day.map(x => x.count))) * 100, 100)}%` }} />
                         </div>
-                        <span className="text-xs font-medium text-gray-700 w-8 text-right">{day.count}</span>
+                        <span className="text-xs font-medium text-gray-700 w-8 text-right">{d.count}</span>
                       </div>
                     ))}
                   </div>
