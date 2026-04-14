@@ -111,51 +111,77 @@ export default function BusinessDetail() {
   const [newAutoTrigger, setNewAutoTrigger] = useState("positive");
   const [newAutoMessage, setNewAutoMessage] = useState("");
   const { t } = useI18n();
-  // Google URL smart-parser: converts any Google Maps URL into writereview URL
+  // Google search & URL resolution state
+  const [googleSearchQuery, setGoogleSearchQuery] = useState("");
+  const [googleSearching, setGoogleSearching] = useState(false);
+  const [googleError, setGoogleError] = useState("");
+  const [googleResolving, setGoogleResolving] = useState(false);
+
+  // Client-side smart URL parser
   const parseGoogleUrl = (url: string): string | null => {
     try {
-      const trimmed = url.trim();
-      // Already a writereview URL — keep as-is
-      if (trimmed.includes("writereview")) return trimmed;
-      // Extract Place ID (ChIJ... format) from any Google Maps URL
-      const placeIdMatch = trimmed.match(/ChIJ[A-Za-z0-9_-]{20,}/);
-      if (placeIdMatch) return `https://search.google.com/local/writereview?placeid=${placeIdMatch[0]}`;
-      // Extract CID from hex pair format (0x...:0x...)
-      const hexMatch = trimmed.match(/0x[0-9a-f]+:0x([0-9a-f]+)/i);
-      if (hexMatch) {
-        const cid = BigInt("0x" + hexMatch[1]).toString();
-        return `https://search.google.com/local/writereview?placecid=${cid}`;
-      }
-      // Extract ludocid from URL params
-      const ludocidMatch = trimmed.match(/ludocid=(\d+)/);
-      if (ludocidMatch) return `https://search.google.com/local/writereview?placecid=${ludocidMatch[1]}`;
-      // Extract placecid or placeid from URL params
-      const placecidMatch = trimmed.match(/placecid=(\d+)/);
-      if (placecidMatch) return `https://search.google.com/local/writereview?placecid=${placecidMatch[1]}`;
-      const placeidMatch = trimmed.match(/placeid=([A-Za-z0-9_-]+)/);
-      if (placeidMatch) return `https://search.google.com/local/writereview?placeid=${placeidMatch[1]}`;
-      // Extract CID from data= param (format: !1s0x...:0x...)
-      const dataMatch = trimmed.match(/!1s0x[0-9a-f]+:0x([0-9a-f]+)/i);
-      if (dataMatch) {
-        const cid = BigInt("0x" + dataMatch[1]).toString();
-        return `https://search.google.com/local/writereview?placecid=${cid}`;
-      }
-      // Plain numeric CID
-      if (/^\d{10,}$/.test(trimmed)) return `https://search.google.com/local/writereview?placecid=${trimmed}`;
+      const t = url.trim();
+      if (t.includes("writereview")) return t;
+      const pid = t.match(/ChIJ[A-Za-z0-9_-]{20,}/);
+      if (pid) return `https://search.google.com/local/writereview?placeid=${pid[0]}`;
+      const hex = t.match(/0x[0-9a-f]+:0x([0-9a-f]+)/i);
+      if (hex) return `https://search.google.com/local/writereview?placecid=${BigInt("0x" + hex[1]).toString()}`;
+      const ludo = t.match(/ludocid=(\d+)/);
+      if (ludo) return `https://search.google.com/local/writereview?placecid=${ludo[1]}`;
+      const pcid = t.match(/placecid=(\d+)/);
+      if (pcid) return `https://search.google.com/local/writereview?placecid=${pcid[1]}`;
+      const ppid = t.match(/placeid=([A-Za-z0-9_-]+)/);
+      if (ppid) return `https://search.google.com/local/writereview?placeid=${ppid[1]}`;
+      const dm = t.match(/!1s0x[0-9a-f]+:0x([0-9a-f]+)/i);
+      if (dm) return `https://search.google.com/local/writereview?placecid=${BigInt("0x" + dm[1]).toString()}`;
+      if (/^\d{10,}$/.test(t)) return `https://search.google.com/local/writereview?placecid=${t}`;
       return null;
     } catch { return null; }
   };
 
-  const handleGoogleUrlPaste = (value: string) => {
+  // Handle URL paste: try client-side first, then server-side resolution
+  const handleGoogleUrlPaste = async (value: string) => {
     setEditGoogleUrl(value);
-    // Auto-detect and convert Google Maps URLs
-    if (value.includes("google.com/maps") || value.includes("goo.gl/maps") || value.includes("maps.app.goo.gl")) {
-      const parsed = parseGoogleUrl(value);
-      if (parsed && parsed !== value) {
-        setEditGoogleUrl(parsed);
-        toast.success("URL Google Maps détectée et convertie en lien d'avis direct !");
-      }
+    setGoogleError("");
+    // Try client-side parsing first
+    const parsed = parseGoogleUrl(value);
+    if (parsed && parsed !== value) {
+      setEditGoogleUrl(parsed);
+      toast.success("Lien d'avis Google détecté !");
+      return;
     }
+    // If it looks like a Google Maps URL/short link, try server-side resolution
+    if (value.length > 15 && (value.includes("google") || value.includes("goo.gl") || value.includes("maps.app"))) {
+      setGoogleResolving(true);
+      try {
+        const res = await api.get("/api/google-resolve-url", { params: { url: value } });
+        if (res.data.success && res.data.review_url) {
+          setEditGoogleUrl(res.data.review_url);
+          toast.success("Lien Google résolu et converti !");
+        }
+      } catch { /* ignore */ }
+      setGoogleResolving(false);
+    }
+  };
+
+  // Search by business name via backend
+  const searchGoogleByName = async () => {
+    if (!googleSearchQuery.trim()) return;
+    setGoogleSearching(true);
+    setGoogleError("");
+    try {
+      const res = await api.get("/api/google-resolve-url", { params: { query: googleSearchQuery } });
+      if (res.data.success && res.data.review_url) {
+        setEditGoogleUrl(res.data.review_url);
+        toast.success("Commerce trouvé ! Lien d'avis Google appliqué.");
+        setGoogleSearchQuery("");
+      } else {
+        setGoogleError(res.data.error || "Commerce non trouvé.");
+      }
+    } catch {
+      setGoogleError("Erreur de recherche. Essayez la méthode manuelle ci-dessous.");
+    }
+    setGoogleSearching(false);
   };
 
   const fetchAll = async (isInitial = true) => {
@@ -976,50 +1002,66 @@ export default function BusinessDetail() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-4">
-                  {/* Step 1: Open Google Maps */}
-                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4 space-y-3">
-                    <p className="text-sm font-semibold text-green-800">🔍 Trouver votre commerce en 2 étapes</p>
-                    <div className="space-y-3">
-                      <div className="flex items-start gap-3">
-                        <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-600 text-white text-xs font-bold flex items-center justify-center">1</span>
-                        <div className="flex-1">
-                          <p className="text-xs text-green-800 font-medium">Cherchez votre commerce sur Google Maps :</p>
-                          <Button
-                            size="sm"
-                            className="mt-2 bg-green-600 hover:bg-green-700 text-white"
-                            onClick={() => {
-                              const q = encodeURIComponent(editName || "mon commerce");
-                              window.open(`https://www.google.com/maps/search/${q}`, "_blank");
-                            }}
-                          >
-                            Ouvrir Google Maps
-                          </Button>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-3">
-                        <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-600 text-white text-xs font-bold flex items-center justify-center">2</span>
-                        <div className="flex-1">
-                          <p className="text-xs text-green-800 font-medium">Cliquez sur votre fiche, puis copiez l'URL de la barre d'adresse et collez-la ici :</p>
-                          <p className="text-[10px] text-green-600 mt-1">On détecte automatiquement le bon format — pas besoin de chercher "writereview" !</p>
-                        </div>
-                      </div>
+                  {/* Method 1: Search by name */}
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 space-y-3">
+                    <p className="text-sm font-semibold text-blue-800">Méthode 1 — Recherche par nom</p>
+                    <p className="text-xs text-blue-700">Tapez le nom exact de votre commerce + ville :</p>
+                    <div className="flex gap-2">
+                      <Input
+                        value={googleSearchQuery}
+                        onChange={(e) => { setGoogleSearchQuery(e.target.value); setGoogleError(""); }}
+                        placeholder="Ex: Atelier K coiffeur Bordeaux"
+                        className="flex-1"
+                        onKeyDown={(e) => e.key === "Enter" && searchGoogleByName()}
+                      />
+                      <Button onClick={searchGoogleByName} disabled={googleSearching || !googleSearchQuery.trim()} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white whitespace-nowrap">
+                        {googleSearching ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
+                        {googleSearching ? "Recherche..." : "Chercher"}
+                      </Button>
                     </div>
+                    {googleError && <p className="text-xs text-orange-600">{googleError}</p>}
                   </div>
 
-                  {/* URL input with smart parser */}
+                  {/* Method 2: Share from Google Maps (mobile-friendly) */}
+                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4 space-y-3">
+                    <p className="text-sm font-semibold text-green-800">Méthode 2 — Depuis Google Maps (mobile)</p>
+                    <ol className="text-xs text-green-700 space-y-2 list-decimal list-inside">
+                      <li>
+                        <span className="font-medium">Ouvrir Google Maps</span> et chercher votre commerce :
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="ml-2 border-green-400 text-green-700 hover:bg-green-100"
+                          onClick={() => {
+                            const q = encodeURIComponent(editName || "mon commerce");
+                            window.open(`https://www.google.com/maps/search/${q}`, "_blank");
+                          }}
+                        >
+                          Ouvrir Google Maps
+                        </Button>
+                      </li>
+                      <li>Appuyez sur votre fiche, puis sur <strong>"Partager"</strong> puis <strong>"Copier le lien"</strong></li>
+                      <li>Revenez ici et <strong>collez le lien</strong> dans le champ ci-dessous</li>
+                    </ol>
+                  </div>
+
+                  {/* URL input field with smart parser + server-side resolution */}
                   <div className="space-y-2">
-                    <Label htmlFor="edit-google-url">URL Google (collez n'importe quel lien Google Maps)</Label>
-                    <Input
-                      id="edit-google-url"
-                      value={editGoogleUrl}
-                      onChange={(e) => handleGoogleUrlPaste(e.target.value)}
-                      placeholder="Collez ici le lien Google Maps de votre commerce..."
-                    />
+                    <Label htmlFor="edit-google-url">Collez ici le lien Google Maps ou un lien d'avis</Label>
+                    <div className="relative">
+                      <Input
+                        id="edit-google-url"
+                        value={editGoogleUrl}
+                        onChange={(e) => handleGoogleUrlPaste(e.target.value)}
+                        placeholder="Collez ici un lien Google Maps, goo.gl, ou writereview..."
+                      />
+                      {googleResolving && <Loader2 className="absolute right-3 top-2.5 w-4 h-4 animate-spin text-blue-500" />}
+                    </div>
                     {editGoogleUrl && editGoogleUrl.includes("writereview") && (
-                      <p className="text-xs text-green-600 font-medium">✓ Lien d'avis direct détecté — vos clients seront redirigés vers le formulaire Google.</p>
+                      <p className="text-xs text-green-600 font-medium">Lien d'avis direct OK — vos clients seront redirigés vers le formulaire Google.</p>
                     )}
                     {editGoogleUrl && !editGoogleUrl.includes("writereview") && editGoogleUrl.length > 10 && (
-                      <p className="text-xs text-orange-600">⚠ Ce lien ne semble pas être un lien d'avis direct. Essayez de coller l'URL complète de votre fiche Google Maps.</p>
+                      <p className="text-xs text-orange-600">Ce lien ne semble pas être un lien d'avis direct. Utilisez une des méthodes ci-dessus.</p>
                     )}
                   </div>
                 </div>

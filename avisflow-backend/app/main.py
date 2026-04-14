@@ -240,6 +240,112 @@ async def directory(category: str = "", search: str = ""):
         ]
 
 
+@app.get("/api/google-resolve-url")
+async def google_resolve_url(url: str = "", query: str = ""):
+    """Resolve a Google Maps URL or search for a business to find the review URL.
+    - If 'url' is provided: resolve short links and extract Place ID/CID
+    - If 'query' is provided: search DuckDuckGo for the business to find Place IDs
+    """
+    import httpx
+    import re
+
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    }
+
+    async def extract_ids(text: str) -> dict | None:
+        """Extract Place ID or CID from a URL or text."""
+        # writereview URL — already good
+        wm = re.search(r'(https://search\.google\.com/local/writereview\?[^\s"\'<>]+)', text)
+        if wm:
+            return {"review_url": wm.group(1), "source": "direct"}
+        # Place ID (ChIJ...)
+        pm = re.search(r'(ChIJ[A-Za-z0-9_-]{20,})', text)
+        if pm:
+            return {"review_url": f"https://search.google.com/local/writereview?placeid={pm.group(1)}", "place_id": pm.group(1), "source": "placeid"}
+        # Hex CID pair (0x...:0x...)
+        hm = re.search(r'0x[0-9a-f]+:0x([0-9a-f]+)', text, re.I)
+        if hm:
+            cid = str(int(hm.group(1), 16))
+            return {"review_url": f"https://search.google.com/local/writereview?placecid={cid}", "cid": cid, "source": "cid_hex"}
+        # ludocid
+        lm = re.search(r'ludocid=(\d+)', text)
+        if lm:
+            return {"review_url": f"https://search.google.com/local/writereview?placecid={lm.group(1)}", "cid": lm.group(1), "source": "ludocid"}
+        # placecid param
+        cm = re.search(r'placecid=(\d+)', text)
+        if cm:
+            return {"review_url": f"https://search.google.com/local/writereview?placecid={cm.group(1)}", "cid": cm.group(1), "source": "placecid"}
+        # data param with CID
+        dm = re.search(r'!1s0x[0-9a-f]+:0x([0-9a-f]+)', text, re.I)
+        if dm:
+            cid = str(int(dm.group(1), 16))
+            return {"review_url": f"https://search.google.com/local/writereview?placecid={cid}", "cid": cid, "source": "data_cid"}
+        return None
+
+    try:
+        async with httpx.AsyncClient(follow_redirects=True, timeout=15.0, max_redirects=10) as client:
+            # Mode 1: Resolve a provided URL
+            if url and url.strip():
+                clean_url = url.strip()
+                # First try extracting from the URL itself
+                result = await extract_ids(clean_url)
+                if result:
+                    return {"success": True, **result}
+
+                # If it's a short link, follow redirects to get full URL
+                if any(d in clean_url for d in ["goo.gl", "maps.app", "g.co"]):
+                    try:
+                        resp = await client.get(clean_url, headers=headers)
+                        expanded = str(resp.url)
+                        result = await extract_ids(expanded)
+                        if result:
+                            return {"success": True, **result}
+                        # Also check response body
+                        result = await extract_ids(resp.text)
+                        if result:
+                            return {"success": True, **result}
+                    except Exception:
+                        pass
+
+                return {"success": False, "error": "Impossible d'extraire l'identifiant Google de cette URL. Essayez avec un lien de partage Google Maps."}
+
+            # Mode 2: Search by business name via DuckDuckGo
+            if query and len(query.strip()) >= 3:
+                search_q = f"{query.strip()} google maps avis"
+                try:
+                    resp = await client.post(
+                        "https://html.duckduckgo.com/html/",
+                        data={"q": search_q},
+                        headers=headers,
+                    )
+                    result = await extract_ids(resp.text)
+                    if result:
+                        return {"success": True, **result}
+                except Exception:
+                    pass
+
+                # Try alternate search query
+                try:
+                    resp = await client.post(
+                        "https://html.duckduckgo.com/html/",
+                        data={"q": f"{query.strip()} site:google.com/maps"},
+                        headers=headers,
+                    )
+                    result = await extract_ids(resp.text)
+                    if result:
+                        return {"success": True, **result}
+                except Exception:
+                    pass
+
+                return {"success": False, "error": "Commerce non trouvé. Essayez avec le nom exact + ville, ou utilisez le bouton 'Partager' depuis Google Maps."}
+
+            return {"success": False, "error": "Fournissez une URL Google Maps ou un nom de commerce."}
+
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
 @app.get("/api/public/stats")
 async def public_stats():
     """Public stats for landing page - no auth required."""
