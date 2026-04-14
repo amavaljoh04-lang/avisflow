@@ -9,10 +9,11 @@ import { Separator } from "@/components/ui/separator";
 import {
   Star, ArrowLeft, QrCode, BarChart3, MessageSquare, TrendingUp, Download,
   Plus, Loader2, Trash2, ExternalLink, ThumbsUp, ThumbsDown, Eye, Settings, Save,
-  Upload, Code, Copy, Palette,
+  Upload, Code, Copy, Palette, Bell, Zap, Trophy, FileDown, AlertTriangle,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "@/lib/api";
+import { useI18n } from "@/lib/i18n";
 
 interface Analytics {
   total_reviews: number;
@@ -47,6 +48,34 @@ interface QRImageData {
   [qrId: number]: string;
 }
 
+interface Insights {
+  tag_distribution: Record<string, number>;
+  category_averages: Record<string, number>;
+  trend: string;
+  weekly_change: number;
+  top_issues: string[];
+  keyword_insights: Array<{ word: string; count: number }>;
+  comparison_percentile: number;
+}
+
+interface AutoResponse {
+  id: number;
+  business_id: number;
+  trigger_type: string;
+  message: string;
+  is_active: boolean;
+  created_at: string;
+}
+
+interface Alert {
+  id: number;
+  business_id: number;
+  alert_type: string;
+  message: string;
+  is_read: boolean;
+  created_at: string;
+}
+
 export default function BusinessDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -75,6 +104,13 @@ export default function BusinessDetail() {
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [hasLogo, setHasLogo] = useState(false);
   const [embedCode, setEmbedCode] = useState("");
+  // New analytics state
+  const [insights, setInsights] = useState<Insights | null>(null);
+  const [autoResponses, setAutoResponses] = useState<AutoResponse[]>([]);
+  const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [newAutoTrigger, setNewAutoTrigger] = useState("positive");
+  const [newAutoMessage, setNewAutoMessage] = useState("");
+  const { t } = useI18n();
 
   const fetchAll = async (isInitial = true) => {
     try {
@@ -116,6 +152,19 @@ export default function BusinessDetail() {
         setEmbedCode(embedRes.data.html);
       } catch {
         // ignore
+      }
+      // Fetch insights, auto-responses, alerts
+      try {
+        const [insightsRes, autoRes, alertsRes] = await Promise.all([
+          api.get(`/api/businesses/${id}/insights`),
+          api.get(`/api/businesses/${id}/auto-responses`),
+          api.get(`/api/businesses/${id}/alerts`),
+        ]);
+        setInsights(insightsRes.data);
+        setAutoResponses(autoRes.data);
+        setAlerts(alertsRes.data);
+      } catch {
+        // ignore - these are new features, graceful degradation
       }
     } catch {
       if (isInitial) {
@@ -237,6 +286,57 @@ export default function BusinessDetail() {
       navigate("/dashboard");
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Erreur lors de la suppression");
+    }
+  };
+
+  const handleExport = async () => {
+    try {
+      const res = await api.get(`/api/businesses/${id}/export`);
+      const blob = new Blob([JSON.stringify(res.data, null, 2)], { type: "application/json" });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `avisflow-export-${business?.slug || id}.json`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+      toast.success(t("export.success"));
+    } catch {
+      toast.error("Erreur lors de l'export");
+    }
+  };
+
+  const createAutoResponse = async () => {
+    if (!newAutoMessage.trim()) return;
+    try {
+      await api.post(`/api/businesses/${id}/auto-responses`, {
+        trigger_type: newAutoTrigger,
+        message: newAutoMessage,
+      });
+      toast.success(t("auto.created"));
+      setNewAutoMessage("");
+      const res = await api.get(`/api/businesses/${id}/auto-responses`);
+      setAutoResponses(res.data);
+    } catch {
+      toast.error("Erreur");
+    }
+  };
+
+  const deleteAutoResponse = async (arId: number) => {
+    try {
+      await api.delete(`/api/businesses/${id}/auto-responses/${arId}`);
+      toast.success(t("auto.deleted"));
+      setAutoResponses((prev) => prev.filter((a) => a.id !== arId));
+    } catch {
+      toast.error("Erreur");
+    }
+  };
+
+  const markAlertRead = async (alertId: number) => {
+    try {
+      await api.put(`/api/businesses/${id}/alerts/${alertId}/read`);
+      setAlerts((prev) => prev.map((a) => a.id === alertId ? { ...a, is_read: true } : a));
+    } catch {
+      toast.error("Erreur");
     }
   };
 
@@ -393,6 +493,236 @@ export default function BusinessDetail() {
                     <p className="text-3xl font-bold text-gray-900">{analytics?.total_scans || 0}</p>
                     <p className="text-sm text-gray-500">Scans totaux</p>
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Timeline Chart */}
+            {analytics?.reviews_by_day && analytics.reviews_by_day.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-blue-600" /> {t("insights.timeline")}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    {analytics.reviews_by_day.slice(-14).map((day) => (
+                      <div key={day.date} className="flex items-center gap-3">
+                        <span className="text-xs text-gray-500 w-20">{new Date(day.date).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}</span>
+                        <div className="flex-1 bg-gray-100 rounded-full h-4 overflow-hidden">
+                          <div className="h-full bg-blue-500 rounded-full" style={{ width: `${Math.min((day.count / Math.max(...analytics.reviews_by_day.map(d => d.count))) * 100, 100)}%` }} />
+                        </div>
+                        <span className="text-xs font-medium text-gray-700 w-8 text-right">{day.count}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Insights: Scores + Tags + Comparison */}
+            {insights && (
+              <>
+                {/* Detailed Scores */}
+                {Object.keys(insights.category_averages).length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Star className="w-5 h-5 text-yellow-500" /> {t("insights.scores")}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {Object.entries(insights.category_averages).map(([cat, avg]) => (
+                          <div key={cat} className="text-center p-3 bg-gray-50 rounded-xl">
+                            <p className="text-2xl font-bold text-gray-900">{avg.toFixed(1)}</p>
+                            <p className="text-xs text-gray-500 capitalize">{t(`review.score.${cat}`)}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Tag Distribution */}
+                {Object.keys(insights.tag_distribution).length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <BarChart3 className="w-5 h-5 text-indigo-600" /> {t("insights.tags")}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        {Object.entries(insights.tag_distribution).sort((a, b) => b[1] - a[1]).map(([tag, count]) => {
+                          const total = Object.values(insights.tag_distribution).reduce((a, b) => a + b, 0);
+                          const pct = Math.round((count / total) * 100);
+                          return (
+                            <div key={tag} className="flex items-center gap-3">
+                              <span className="text-sm w-28 capitalize">{t(`review.tag.${tag}`)}</span>
+                              <div className="flex-1 bg-gray-100 rounded-full h-3 overflow-hidden">
+                                <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${pct}%` }} />
+                              </div>
+                              <span className="text-xs text-gray-500 w-16 text-right">{count} ({pct}%)</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Trend + Comparison */}
+                <div className="grid md:grid-cols-2 gap-4">
+                  <Card>
+                    <CardContent className="p-5">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                          insights.trend === "up" ? "bg-green-50" : insights.trend === "down" ? "bg-red-50" : "bg-gray-50"
+                        }`}>
+                          <TrendingUp className={`w-5 h-5 ${
+                            insights.trend === "up" ? "text-green-600" : insights.trend === "down" ? "text-red-600 rotate-180" : "text-gray-600"
+                          }`} />
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500">{t("insights.trend")}</p>
+                          <p className="text-lg font-bold">
+                            {insights.trend === "up" ? t("insights.trend.up") : insights.trend === "down" ? t("insights.trend.down") : t("insights.trend.stable")}
+                          </p>
+                          <p className="text-xs text-gray-400">{t("insights.weekly_change")}: {insights.weekly_change > 0 ? "+" : ""}{insights.weekly_change.toFixed(1)}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-yellow-50 flex items-center justify-center">
+                          <Trophy className="w-5 h-5 text-yellow-600" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500">{t("insights.comparison")}</p>
+                          <p className="text-lg font-bold">
+                            {t("insights.better_than").replace("{pct}", String(insights.comparison_percentile))}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Keywords */}
+                {insights.keyword_insights.length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Zap className="w-5 h-5 text-orange-500" /> {t("insights.keywords")}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex flex-wrap gap-2">
+                        {insights.keyword_insights.map((kw) => (
+                          <Badge key={kw.word} variant="secondary" className="text-sm">
+                            {kw.word} <span className="ml-1 text-xs text-gray-400">({kw.count})</span>
+                          </Badge>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </>
+            )}
+
+            {/* Alerts */}
+            {alerts.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Bell className="w-5 h-5 text-red-500" /> {t("alerts.title")}
+                    <Badge className="bg-red-100 text-red-700 ml-2">{alerts.filter(a => !a.is_read).length}</Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {alerts.map((alert) => (
+                      <div key={alert.id} className={`flex items-center justify-between p-3 rounded-lg border ${alert.is_read ? "bg-gray-50 border-gray-200" : "bg-red-50 border-red-200"}`}>
+                        <div className="flex items-center gap-3">
+                          <AlertTriangle className={`w-4 h-4 ${alert.is_read ? "text-gray-400" : "text-red-500"}`} />
+                          <div>
+                            <p className="text-sm font-medium">{alert.message}</p>
+                            <p className="text-xs text-gray-400">{new Date(alert.created_at).toLocaleDateString("fr-FR")}</p>
+                          </div>
+                        </div>
+                        {!alert.is_read && (
+                          <Button variant="ghost" size="sm" onClick={() => markAlertRead(alert.id)}>
+                            {t("alerts.mark_read")}
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Auto-Responses */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <MessageSquare className="w-5 h-5 text-green-600" /> {t("auto.title")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {autoResponses.length === 0 && (
+                  <p className="text-sm text-gray-500">{t("auto.empty.desc")}</p>
+                )}
+                {autoResponses.map((ar) => (
+                  <div key={ar.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                      <Badge variant="secondary" className="text-xs mb-1">
+                        {ar.trigger_type === "positive" ? t("auto.trigger.positive") : ar.trigger_type === "negative" ? t("auto.trigger.negative") : t("auto.trigger.all")}
+                      </Badge>
+                      <p className="text-sm">{ar.message}</p>
+                    </div>
+                    <Button variant="ghost" size="sm" className="text-red-500" onClick={() => deleteAutoResponse(ar.id)}>
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ))}
+                <Separator />
+                <div className="space-y-3">
+                  <div className="flex gap-2">
+                    <select value={newAutoTrigger} onChange={(e) => setNewAutoTrigger(e.target.value)} className="rounded-md border border-input bg-background px-3 py-2 text-sm">
+                      <option value="positive">{t("auto.trigger.positive")}</option>
+                      <option value="negative">{t("auto.trigger.negative")}</option>
+                      <option value="all">{t("auto.trigger.all")}</option>
+                    </select>
+                    <Input placeholder={t("auto.message")} value={newAutoMessage} onChange={(e) => setNewAutoMessage(e.target.value)} className="flex-1" />
+                    <Button onClick={createAutoResponse} disabled={!newAutoMessage.trim()} className="bg-green-600 hover:bg-green-700">
+                      <Plus className="w-4 h-4 mr-1" /> {t("auto.add")}
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Export */}
+            <Card>
+              <CardContent className="p-5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center">
+                      <FileDown className="w-5 h-5 text-purple-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium">{t("export.title")}</p>
+                      <p className="text-xs text-gray-500">JSON - avis, tags, scores, analytics</p>
+                    </div>
+                  </div>
+                  <Button onClick={handleExport} variant="outline">
+                    <Download className="w-4 h-4 mr-2" /> {t("export.button")}
+                  </Button>
                 </div>
               </CardContent>
             </Card>

@@ -12,6 +12,7 @@ import AdminPanel from "@/pages/AdminPanel";
 import BlogList from "@/pages/BlogList";
 import BlogPost from "@/pages/BlogPost";
 import VerifyEmail from "@/pages/VerifyEmail";
+import Directory from "@/pages/Directory";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
 function ProtectedRoute({ children, user }: { children: React.ReactNode; user: any }) {
@@ -56,6 +57,7 @@ export default function App() {
           <Route path="/admin" element={<AdminRoute user={user}><AdminPanel /></AdminRoute>} />
           <Route path="/review/:slug" element={<ReviewPage />} />
           <Route path="/verify" element={<VerifyEmail />} />
+          <Route path="/directory" element={<Directory />} />
           <Route path="/blog" element={<BlogList />} />
           <Route path="/blog/:slug" element={<BlogPost />} />
           <Route path="*" element={<Navigate to="/" replace />} />

@@ -134,7 +134,12 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                 </div>
                 <div className="space-y-2">
                   <Label>{t("dash.category")}</Label>
-                  <Input placeholder={t("dash.category.placeholder")} value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
+                  <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+                    <option value="">{t("dash.category.placeholder")}</option>
+                    {["Restaurant","Coiffeur","Barbier","Boulangerie","Garage","Pharmacie","Salon de beaut\u00e9","H\u00f4tel","Caf\u00e9","Magasin","Clinique","Dentiste","V\u00e9t\u00e9rinaire","Fleuriste","Librairie","Bar","Pizzeria","Pressing","Opticien","\u00c9picerie","Autre"].map((cat) => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
                 </div>
                 <div className="space-y-2">
                   <Label>{t("dash.address")}</Label>

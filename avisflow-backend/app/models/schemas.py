@@ -71,6 +71,8 @@ class ReviewSubmit(BaseModel):
     feedback: Optional[str] = None
     customer_name: Optional[str] = None
     customer_email: Optional[str] = None
+    tags: Optional[list[str]] = None
+    scores: Optional[dict[str, int]] = None
 
 
 class ReviewResponse(BaseModel):
@@ -83,6 +85,9 @@ class ReviewResponse(BaseModel):
     source: str
     redirected_to_google: bool
     created_at: str
+    tags: Optional[list[str]] = None
+    scores: Optional[dict[str, int]] = None
+    auto_response: Optional[str] = None
 
 
 class QRCodeResponse(BaseModel):
@@ -116,3 +121,27 @@ class AdminStats(BaseModel):
     total_scans: int
     recent_users: list
     recent_reviews: list
+
+
+class AutoResponseCreate(BaseModel):
+    trigger_type: str = "positive"
+    message: str
+    is_active: bool = True
+
+
+class AutoResponseResponse(BaseModel):
+    id: int
+    business_id: int
+    trigger_type: str
+    message: str
+    is_active: bool
+    created_at: str
+
+
+class AlertResponse(BaseModel):
+    id: int
+    business_id: int
+    alert_type: str
+    message: str
+    is_read: bool
+    created_at: str

@@ -199,6 +199,47 @@ async def embed_code(slug: str):
     }
 
 
+PREDEFINED_CATEGORIES = [
+    "Restaurant", "Coiffeur", "Barbier", "Boulangerie", "Garage", "Pharmacie",
+    "Salon de beauté", "Hôtel", "Café", "Magasin", "Clinique", "Dentiste",
+    "Vétérinaire", "Fleuriste", "Librairie", "Bar", "Pizzeria", "Pressing",
+    "Opticien", "Épicerie", "Autre",
+]
+
+
+@app.get("/api/directory/categories")
+async def directory_categories():
+    """List all predefined business categories."""
+    return PREDEFINED_CATEGORIES
+
+
+@app.get("/api/directory")
+async def directory(category: str = "", search: str = ""):
+    """Public directory of all active businesses, with optional filters."""
+    from app.database import get_db
+    with get_db() as db:
+        query = "SELECT b.id, b.name, b.slug, b.category, b.address, b.logo_url, COALESCE(AVG(r.rating), 0) as avg_rating, COUNT(r.id) as review_count FROM businesses b LEFT JOIN reviews r ON r.business_id = b.id WHERE b.is_active = 1"
+        params: list = []
+        if category:
+            query += " AND b.category = ?"
+            params.append(category)
+        if search:
+            query += " AND b.name LIKE ?"
+            params.append(f"%{search}%")
+        query += " GROUP BY b.id ORDER BY review_count DESC, avg_rating DESC"
+        rows = db.execute(query, params).fetchall()
+        return [
+            {
+                "id": r["id"], "name": r["name"], "slug": r["slug"],
+                "category": r["category"], "address": r["address"],
+                "logo_url": r["logo_url"],
+                "avg_rating": round(r["avg_rating"], 1),
+                "review_count": r["review_count"],
+            }
+            for r in rows
+        ]
+
+
 @app.get("/api/public/stats")
 async def public_stats():
     """Public stats for landing page - no auth required."""

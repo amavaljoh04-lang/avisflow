@@ -280,6 +280,74 @@ const translations: Record<Lang, Record<string, string>> = {
     "admin.ads.error": "Erreur",
     "admin.ads.activated": "Publicit\u00e9 activ\u00e9e",
     "admin.ads.deactivated": "Publicit\u00e9 d\u00e9sactiv\u00e9e",
+
+    // Structured feedback
+    "review.satisfied": "Satisfait",
+    "review.not_satisfied": "Pas satisfait",
+    "review.quick_feedback": "Qu'est-ce qui pourrait \u00eatre am\u00e9lior\u00e9 ?",
+    "review.tag.attente": "Temps d'attente",
+    "review.tag.accueil": "Accueil",
+    "review.tag.produit": "Qualit\u00e9 produit",
+    "review.tag.proprete": "Propret\u00e9",
+    "review.tag.prix": "Prix",
+    "review.tag.autre": "Autre",
+    "review.score.satisfaction": "Satisfaction",
+    "review.score.rapidite": "Rapidit\u00e9",
+    "review.score.service": "Service",
+    "review.score.qualite_prix": "Qualit\u00e9/Prix",
+    "review.rate_details": "D\u00e9taillez votre exp\u00e9rience (optionnel)",
+    "review.auto_response": "R\u00e9ponse de l'\u00e9tablissement",
+
+    // Analytics insights
+    "insights.title": "Analyse intelligente",
+    "insights.tags": "Retours fr\u00e9quents",
+    "insights.scores": "Scores d\u00e9taill\u00e9s",
+    "insights.trend": "Tendance",
+    "insights.trend.up": "En hausse",
+    "insights.trend.down": "En baisse",
+    "insights.trend.stable": "Stable",
+    "insights.weekly_change": "Variation hebdo",
+    "insights.top_issues": "Probl\u00e8mes fr\u00e9quents",
+    "insights.keywords": "Mots cl\u00e9s",
+    "insights.comparison": "Comparaison locale",
+    "insights.better_than": "Mieux que {pct}% des \u00e9tablissements similaires",
+    "insights.no_data": "Pas encore assez de donn\u00e9es",
+    "insights.timeline": "\u00c9volution dans le temps",
+
+    // Auto-responses
+    "auto.title": "R\u00e9ponses automatiques",
+    "auto.add": "Ajouter une r\u00e9ponse",
+    "auto.trigger": "D\u00e9clencheur",
+    "auto.trigger.positive": "Avis positif (4-5\u2b50)",
+    "auto.trigger.negative": "Avis n\u00e9gatif (1-3\u2b50)",
+    "auto.trigger.all": "Tous les avis",
+    "auto.message": "Message",
+    "auto.created": "R\u00e9ponse cr\u00e9\u00e9e !",
+    "auto.deleted": "R\u00e9ponse supprim\u00e9e !",
+    "auto.empty": "Aucune r\u00e9ponse automatique",
+    "auto.empty.desc": "Ajoutez des r\u00e9ponses automatiques pour r\u00e9pondre aux avis",
+
+    // Alerts
+    "alerts.title": "Alertes",
+    "alerts.empty": "Aucune alerte",
+    "alerts.mark_read": "Marquer comme lue",
+    "alerts.negative_spike": "Pic n\u00e9gatif",
+    "alerts.rating_drop": "Baisse de note",
+
+    // Export
+    "export.title": "Exporter les donn\u00e9es",
+    "export.button": "T\u00e9l\u00e9charger (JSON)",
+    "export.success": "Donn\u00e9es export\u00e9es !",
+
+    // Directory
+    "directory.title": "Annuaire des \u00e9tablissements",
+    "directory.subtitle": "D\u00e9couvrez les \u00e9tablissements inscrits sur AvisFlow",
+    "directory.search": "Rechercher un \u00e9tablissement...",
+    "directory.all_categories": "Toutes les cat\u00e9gories",
+    "directory.no_results": "Aucun \u00e9tablissement trouv\u00e9",
+    "directory.reviews": "avis",
+    "directory.see_reviews": "Voir les avis",
+    "nav.directory": "Annuaire",
   },
   en: {
     // Nav
@@ -557,6 +625,74 @@ const translations: Record<Lang, Record<string, string>> = {
     "admin.ads.error": "Error",
     "admin.ads.activated": "Ad activated",
     "admin.ads.deactivated": "Ad deactivated",
+
+    // Structured feedback
+    "review.satisfied": "Satisfied",
+    "review.not_satisfied": "Not satisfied",
+    "review.quick_feedback": "What could be improved?",
+    "review.tag.attente": "Wait time",
+    "review.tag.accueil": "Welcome",
+    "review.tag.produit": "Product quality",
+    "review.tag.proprete": "Cleanliness",
+    "review.tag.prix": "Price",
+    "review.tag.autre": "Other",
+    "review.score.satisfaction": "Satisfaction",
+    "review.score.rapidite": "Speed",
+    "review.score.service": "Service",
+    "review.score.qualite_prix": "Value",
+    "review.rate_details": "Rate details (optional)",
+    "review.auto_response": "Response from business",
+
+    // Analytics insights
+    "insights.title": "Smart Analytics",
+    "insights.tags": "Common feedback",
+    "insights.scores": "Detailed scores",
+    "insights.trend": "Trend",
+    "insights.trend.up": "Going up",
+    "insights.trend.down": "Going down",
+    "insights.trend.stable": "Stable",
+    "insights.weekly_change": "Weekly change",
+    "insights.top_issues": "Top issues",
+    "insights.keywords": "Keywords",
+    "insights.comparison": "Local comparison",
+    "insights.better_than": "Better than {pct}% of similar businesses",
+    "insights.no_data": "Not enough data yet",
+    "insights.timeline": "Timeline",
+
+    // Auto-responses
+    "auto.title": "Auto-responses",
+    "auto.add": "Add response",
+    "auto.trigger": "Trigger",
+    "auto.trigger.positive": "Positive review (4-5\u2b50)",
+    "auto.trigger.negative": "Negative review (1-3\u2b50)",
+    "auto.trigger.all": "All reviews",
+    "auto.message": "Message",
+    "auto.created": "Response created!",
+    "auto.deleted": "Response deleted!",
+    "auto.empty": "No auto-responses",
+    "auto.empty.desc": "Add auto-responses to reply to reviews",
+
+    // Alerts
+    "alerts.title": "Alerts",
+    "alerts.empty": "No alerts",
+    "alerts.mark_read": "Mark as read",
+    "alerts.negative_spike": "Negative spike",
+    "alerts.rating_drop": "Rating drop",
+
+    // Export
+    "export.title": "Export data",
+    "export.button": "Download (JSON)",
+    "export.success": "Data exported!",
+
+    // Directory
+    "directory.title": "Business Directory",
+    "directory.subtitle": "Discover businesses registered on AvisFlow",
+    "directory.search": "Search a business...",
+    "directory.all_categories": "All categories",
+    "directory.no_results": "No businesses found",
+    "directory.reviews": "reviews",
+    "directory.see_reviews": "See reviews",
+    "nav.directory": "Directory",
   },
 };
 

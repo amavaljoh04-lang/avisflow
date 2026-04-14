@@ -126,6 +126,50 @@ def init_db():
         CREATE INDEX IF NOT EXISTS idx_reviews_created ON reviews(created_at);
         CREATE INDEX IF NOT EXISTS idx_businesses_user ON businesses(user_id);
         CREATE INDEX IF NOT EXISTS idx_businesses_slug ON businesses(slug);
+
+        -- Structured feedback tags (attente, accueil, produit, autre)
+        CREATE TABLE IF NOT EXISTS review_tags (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            review_id INTEGER NOT NULL,
+            tag TEXT NOT NULL,
+            FOREIGN KEY (review_id) REFERENCES reviews(id)
+        );
+
+        -- Category scores per review (satisfaction, service, rapidite, qualite_prix)
+        CREATE TABLE IF NOT EXISTS review_scores (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            review_id INTEGER NOT NULL,
+            category TEXT NOT NULL,
+            score INTEGER NOT NULL,
+            FOREIGN KEY (review_id) REFERENCES reviews(id)
+        );
+
+        -- Auto-response templates per business
+        CREATE TABLE IF NOT EXISTS auto_responses (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            business_id INTEGER NOT NULL,
+            trigger_type TEXT NOT NULL DEFAULT 'positive',
+            message TEXT NOT NULL,
+            is_active INTEGER DEFAULT 1,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (business_id) REFERENCES businesses(id)
+        );
+
+        -- Alert history
+        CREATE TABLE IF NOT EXISTS alerts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            business_id INTEGER NOT NULL,
+            alert_type TEXT NOT NULL,
+            message TEXT NOT NULL,
+            is_read INTEGER DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (business_id) REFERENCES businesses(id)
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_review_tags_review ON review_tags(review_id);
+        CREATE INDEX IF NOT EXISTS idx_review_scores_review ON review_scores(review_id);
+        CREATE INDEX IF NOT EXISTS idx_alerts_business ON alerts(business_id);
+        CREATE INDEX IF NOT EXISTS idx_auto_responses_business ON auto_responses(business_id);
         """)
         # Migration: add is_verified and verification_token columns to existing users table
         try:
