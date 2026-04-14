@@ -12,6 +12,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "nav.login": "Connexion",
     "nav.signup": "Commencer gratuitement",
     "nav.admin": "Administration",
+    "nav.home": "Accueil",
 
     // Hero
     "hero.badge": "+35% de clients en plus pour nos utilisateurs",
@@ -358,6 +359,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "nav.login": "Login",
     "nav.signup": "Get started free",
     "nav.admin": "Admin",
+    "nav.home": "Home",
 
     // Hero
     "hero.badge": "100% Free — Boost your Google reviews now",

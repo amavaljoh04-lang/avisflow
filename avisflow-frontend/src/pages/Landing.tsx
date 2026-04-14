@@ -44,6 +44,7 @@ export default function Landing() {
             <a href="#features" className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors">{t("nav.features")}</a>
             <a href="#pricing" className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors">{t("nav.pricing")}</a>
             <Link to="/blog" className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors">{t("nav.blog")}</Link>
+            <Link to="/directory" className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors">{t("directory.title")}</Link>
           </div>
           <div className="flex items-center gap-2">
             <LangSwitcher />

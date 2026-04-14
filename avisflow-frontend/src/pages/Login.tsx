@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Star, Loader2, Mail } from "lucide-react";
+import { Star, Loader2, Mail, Home } from "lucide-react";
 import { useI18n, LangSwitcher } from "@/lib/i18n";
 import toast from "react-hot-toast";
 import api from "@/lib/api";
@@ -59,7 +59,15 @@ export default function Login({ onLogin }: LoginProps) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4">
       <SEO title={t("auth.login")} />
-      <div className="absolute top-4 right-4"><LangSwitcher /></div>
+      <div className="absolute top-4 right-4 flex items-center gap-2">
+        <Link to="/" className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors">
+          <Home className="w-4 h-4" /> {t("nav.home")}
+        </Link>
+        <Link to="/directory" className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors">
+          {t("directory.title")}
+        </Link>
+        <LangSwitcher />
+      </div>
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2">
