@@ -1,0 +1,36 @@
+services:
+  backend:
+    build: ./avisflow-backend
+    container_name: avisflow-backend
+    restart: unless-stopped
+    environment:
+      - DATABASE_PATH=/data/avisflow.db
+      - SECRET_KEY=${SECRET_KEY:-change-me-in-production-use-a-long-random-string}
+      - BASE_URL=${BASE_URL:-https://avisflow.online}
+    volumes:
+      - avisflow-data:/data
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/docs')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./avisflow-frontend
+      args:
+        - VITE_API_URL=
+    container_name: avisflow-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      - backend
+
+volumes:
+  avisflow-data:
